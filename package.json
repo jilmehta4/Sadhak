@@ -1,0 +1,34 @@
+{
+  "name": "multilingual-search-engine",
+  "version": "1.0.0",
+  "description": "Local semantic search engine for JPG and PDF files with English and Hindi support",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "ingest": "node ingest-cli.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "search",
+    "multilingual",
+    "hindi",
+    "ocr",
+    "pdf",
+    "semantic-search"
+  ],
+  "author": "",
+  "license": "ISC",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "sql.js": "^1.10.3",
+    "tesseract.js": "^5.0.4",
+    "pdf-parse": "^1.1.1",
+    "@xenova/transformers": "^2.10.0",
+    "uuid": "^9.0.1"
+  }
+}

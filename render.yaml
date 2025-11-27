@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: multilingual-search-engine
+    env: docker
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+    disk:
+      name: search-data
+      mountPath: /app/data
+      sizeGB: 1
