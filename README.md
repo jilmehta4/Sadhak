@@ -54,18 +54,6 @@ A powerful local semantic search engine that indexes and searches JPG images and
 
 6. **Open the web interface**: Navigate to `http://localhost:3000` in your browser
 
-## 🌐 Deployment
-
-Ready to deploy to the cloud for 24/7 availability? See the comprehensive [Deployment Guide](DEPLOYMENT.md) for:
-
-- **Railway** (Recommended) - Easiest setup with free tier
-- **Render** - Reliable hosting with persistent storage
-- **DigitalOcean/AWS** - Production-grade deployment
-- **Oracle Cloud** - Free VPS option
-
-Each option includes step-by-step instructions, resource upload guides, and troubleshooting tips.
-
-
 ## 📁 Project Structure
 
 ```

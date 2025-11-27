@@ -39,21 +39,6 @@ app.get('/health', (req, res) => {
 // Initialize and start server
 async function startServer() {
     try {
-        // Ensure required directories exist
-        const fs = require('fs');
-        const dataDir = path.join(__dirname, 'data');
-        const resourcesDir = path.join(__dirname, 'resources');
-        
-        if (!fs.existsSync(dataDir)) {
-            console.log('Creating data directory...');
-            fs.mkdirSync(dataDir, { recursive: true });
-        }
-        
-        if (!fs.existsSync(resourcesDir)) {
-            console.log('Creating resources directory...');
-            fs.mkdirSync(resourcesDir, { recursive: true });
-        }
-
         console.log('Initializing database...');
         await dbManager.initialize();
 

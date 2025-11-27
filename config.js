@@ -5,9 +5,9 @@ const config = {
   port: process.env.PORT || 3000,
 
   // Paths
-  resourcesPath: process.env.RESOURCES_PATH || path.join(__dirname, 'resources'),
-  dbPath: process.env.DB_PATH || path.join(__dirname, 'data', 'search.db'),
-  vectorStorePath: process.env.VECTOR_STORE_PATH || path.join(__dirname, 'data', 'vectors'),
+  resourcesPath: path.join(__dirname, 'resources'),
+  dbPath: path.join(__dirname, 'data', 'search.db'),
+  vectorStorePath: path.join(__dirname, 'data', 'vectors'),
 
   // Embedding configuration
   embeddingModel: 'Xenova/paraphrase-multilingual-MiniLM-L12-v2',
