@@ -1,10 +1,2 @@
 node_modules/
-resources/
-data/
-*.db
-*.db-shm
-*.db-wal
-vectors/
-.env
-.DS_Store
-*.log
+
