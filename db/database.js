@@ -244,6 +244,40 @@ class DatabaseManager {
     }
 
     /**
+     * Get multiple chunks with resources by IDs, filtered by language
+     */
+    getChunksWithResourcesByLanguage(chunkIds, language) {
+        if (!chunkIds || chunkIds.length === 0) {
+            return [];
+        }
+
+        const placeholders = chunkIds.map(() => '?').join(',');
+        const stmt = this.db.prepare(`
+      SELECT 
+        c.*,
+        r.type as resourceType,
+        r.subtype as resourceSubtype,
+        r.fileName as resourceFileName,
+        r.filePath as resourceFilePath,
+        r.recordedAt as resourceRecordedAt
+      FROM chunks c
+      JOIN resources r ON c.resourceId = r.id
+      WHERE c.id IN (${placeholders})
+        AND c.language = ?
+    `);
+
+        stmt.bind([...chunkIds, language]);
+
+        const results = [];
+        while (stmt.step()) {
+            results.push(stmt.getAsObject());
+        }
+
+        stmt.free();
+        return results;
+    }
+
+    /**
      * Execute a transaction (simplified for SQL.js)
      */
     transaction(callback) {

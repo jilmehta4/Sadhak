@@ -10,6 +10,7 @@ const state = {
   recognition: null,
   conversationHistory: [],
   currentLanguage: 'en',
+  selectedResourceLanguage: 'en', // NEW: for resource filtering
   isAIResponding: false,
   currentReader: null // Store the stream reader for stopping
 };
@@ -70,6 +71,7 @@ function init() {
   console.log('App initializing...');
   setupEventListeners();
   setupLogoNavigation();
+  setupLanguageToggle(); // NEW
   initializeVoiceRecognition();
   checkOllamaStatus();
   console.log('App initialized successfully');
@@ -301,6 +303,28 @@ function setupLogoNavigation() {
   });
 }
 
+// Setup Language Toggle
+function setupLanguageToggle() {
+  const langButtons = document.querySelectorAll('.lang-option');
+  langButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const lang = btn.dataset.lang;
+      setResourceLanguage(lang);
+    });
+  });
+}
+
+function setResourceLanguage(lang) {
+  state.selectedResourceLanguage = lang;
+
+  // Update UI for all language toggle buttons
+  document.querySelectorAll('.lang-option').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lang === lang);
+  });
+
+  console.log(`Resource language set to: ${lang}`);
+}
+
 // Return to Homepage
 function returnToHome() {
   // Reset to home state
@@ -378,7 +402,10 @@ async function handleSearchQuery(query) {
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ query })
+      body: JSON.stringify({
+        query,
+        resourceLanguage: state.selectedResourceLanguage // NEW
+      })
     });
 
     const data = await response.json();
@@ -489,7 +516,8 @@ async function handleChatSubmit(e) {
       },
       body: JSON.stringify({
         message,
-        conversationHistory: state.conversationHistory
+        conversationHistory: state.conversationHistory,
+        resourceLanguage: state.selectedResourceLanguage
       })
     });
 
@@ -613,7 +641,8 @@ async function handleAIChat(message) {
       },
       body: JSON.stringify({
         message,
-        conversationHistory: state.conversationHistory
+        conversationHistory: state.conversationHistory,
+        resourceLanguage: state.selectedResourceLanguage
       })
     });
 

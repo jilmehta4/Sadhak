@@ -5,6 +5,9 @@
 const express = require('express');
 const router = express.Router();
 const ollamaClient = require('../utils/ollama');
+const dbManager = require('../db/database');
+const vectorStore = require('../db/vectorStore');
+const embeddingGenerator = require('../utils/embeddings');
 
 /**
  * POST /chat
@@ -12,7 +15,7 @@ const ollamaClient = require('../utils/ollama');
  */
 router.post('/', async (req, res) => {
     try {
-        const { message, conversationHistory = [] } = req.body;
+        const { message, conversationHistory = [], resourceLanguage = 'en' } = req.body;
 
         if (!message) {
             return res.status(400).json({
@@ -38,12 +41,33 @@ router.post('/', async (req, res) => {
         res.setHeader('Cache-Control', 'no-cache');
         res.setHeader('Connection', 'keep-alive');
 
+        // Retrieve relevant context from selected language resources (RAG)
+        let context = '';
+        try {
+            const queryEmbedding = await embeddingGenerator.generateEmbedding(message);
+            const searchResults = vectorStore.search(queryEmbedding, 5); // Top 5 chunks
+            const chunkIds = searchResults.map(r => r.chunkId);
+            const contextChunks = dbManager.getChunksWithResourcesByLanguage(chunkIds, resourceLanguage);
+
+            context = contextChunks
+                .map(chunk => `[${chunk.resourceFileName}]: ${chunk.text}`)
+                .join('\n\n');
+        } catch (error) {
+            console.warn('Failed to retrieve context:', error.message);
+        }
+
+        // Build system message with context
+        const systemMessage = context
+            ? `You are a helpful AI assistant. Use the following context to answer questions:\n\n${context}\n\nIf the answer is not in the context, say so.`
+            : 'You are a helpful AI assistant.';
+
         let fullResponse = '';
 
-        // Stream response from Ollama
+        // Stream response from Ollama with context
         await ollamaClient.streamResponse(
             message,
             conversationHistory,
+            systemMessage,
             (chunk) => {
                 fullResponse += chunk;
                 // Send chunk to client

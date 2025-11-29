@@ -63,12 +63,13 @@ class OllamaClient {
      * Generate a streaming response from Ollama
      * @param {string} prompt - The user's message
      * @param {Array} conversationHistory - Previous messages for context
+     * @param {string} systemMessage - Optional system message with RAG context
      * @param {Function} onChunk - Callback for each chunk
      * @returns {Promise<void>}
      */
-    async streamResponse(prompt, conversationHistory = [], onChunk) {
+    async streamResponse(prompt, conversationHistory = [], systemMessage = null, onChunk) {
         try {
-            const messages = this._formatConversation(prompt, conversationHistory);
+            const messages = this._formatConversation(prompt, conversationHistory, systemMessage);
 
             const response = await fetch(`${this.baseUrl}/api/generate`, {
                 method: 'POST',
@@ -118,10 +119,11 @@ class OllamaClient {
      * Format conversation history for Ollama
      * @param {string} prompt - Current user message
      * @param {Array} history - Previous messages
+     * @param {string} systemMessage - Optional custom system message
      * @returns {string}
      */
-    _formatConversation(prompt, history = []) {
-        let formatted = config.chatSystemPrompt + '\n\n';
+    _formatConversation(prompt, history = [], systemMessage = null) {
+        let formatted = (systemMessage || config.chatSystemPrompt) + '\n\n';
 
         // Add conversation history
         for (const msg of history) {

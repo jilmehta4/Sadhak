@@ -70,7 +70,7 @@ function formatResult(chunkData) {
  */
 router.post('/', async (req, res) => {
     try {
-        const { query, maxResults = config.defaultMaxResults, uiLanguage = 'en' } = req.body;
+        const { query, maxResults = config.defaultMaxResults, uiLanguage = 'en', resourceLanguage = 'en' } = req.body;
 
         if (!query || query.trim().length === 0) {
             return res.status(400).json({
@@ -96,8 +96,8 @@ router.post('/', async (req, res) => {
         // Get chunk IDs
         const chunkIds = searchResults.map(r => r.chunkId);
 
-        // Retrieve chunks with resource data
-        const chunks = dbManager.getChunksWithResources(chunkIds);
+        // Retrieve chunks with resource data - FILTERED BY LANGUAGE
+        const chunks = dbManager.getChunksWithResourcesByLanguage(chunkIds, resourceLanguage);
 
         // Create a map for quick lookup
         const chunkMap = new Map(chunks.map(c => [c.id, c]));
