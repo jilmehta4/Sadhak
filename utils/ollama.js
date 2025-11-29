@@ -17,7 +17,11 @@ class OllamaClient {
      */
     async checkStatus() {
         try {
-            const response = await fetch(`${this.baseUrl}/api/tags`);
+            const headers = { 'Content-Type': 'application/json' };
+            if (process.env.HF_TOKEN) {
+                headers['Authorization'] = `Bearer ${process.env.HF_TOKEN}`;
+            }
+            const response = await fetch(`${this.baseUrl}/api/tags`, { headers });
             return response.ok;
         } catch (error) {
             console.error('Ollama is not running:', error.message);
@@ -71,11 +75,16 @@ class OllamaClient {
         try {
             const messages = this._formatConversation(prompt, conversationHistory, systemMessage);
 
+            const headers = {
+                'Content-Type': 'application/json',
+            };
+            if (process.env.HF_TOKEN) {
+                headers['Authorization'] = `Bearer ${process.env.HF_TOKEN}`;
+            }
+
             const response = await fetch(`${this.baseUrl}/api/generate`, {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+                headers: headers,
                 body: JSON.stringify({
                     model: this.model,
                     prompt: messages,

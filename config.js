@@ -37,7 +37,7 @@ const config = {
 
   // Ollama configuration
   ollamaUrl: process.env.OLLAMA_URL || 'http://localhost:11434',
-  ollamaModel: process.env.OLLAMA_MODEL || 'llama3',
+  ollamaModel: process.env.OLLAMA_MODEL || 'phi3',
   chatSystemPrompt: 'You are a helpful AI assistant. Respond in the same language as the user\'s question. If the user writes in Hindi (Devanagari script), respond in Hindi. If the user writes in English, respond in English.'
 
 };
