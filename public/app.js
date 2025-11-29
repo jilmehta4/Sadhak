@@ -69,6 +69,7 @@ const elements = {
 function init() {
   console.log('App initializing...');
   setupEventListeners();
+  setupLogoNavigation();
   initializeVoiceRecognition();
   checkOllamaStatus();
   console.log('App initialized successfully');
@@ -206,6 +207,16 @@ function toggleAIMode() {
   state.mode = state.mode === 'search' ? 'ai' : 'search';
   console.log('New mode:', state.mode);
   updateModeUI();
+
+  // Show AI chat interface immediately when enabling AI mode
+  if (state.mode === 'ai') {
+    showAIChatInterface();
+  } else {
+    // Return to home if in home state, or show search results if in results state
+    if (document.body.classList.contains('chat-state')) {
+      returnToHome();
+    }
+  }
 }
 
 function updateModeUI() {
@@ -234,11 +245,27 @@ function updateModeUI() {
     elements.compactSearchWrapper.classList.toggle('hidden', isAIMode);
     elements.modeSwitcherBtn.classList.toggle('hidden', !isAIMode);
     console.log('Compact header visibility toggled (chat-state)');
-  } else {
-    console.log('Not in chat-state, skipping compact header toggle');
   }
 
   console.log('updateModeUI complete');
+}
+
+// Show AI Chat Interface Immediately
+function showAIChatInterface() {
+  // Switch to chat state
+  document.body.classList.remove('home-state', 'results-state');
+  document.body.classList.add('chat-state');
+
+  // Show content container and chat section
+  elements.contentContainer.classList.remove('hidden');
+  elements.searchResultsSection.classList.add('hidden');
+  elements.chatSection.classList.remove('hidden');
+
+  // Update header visibility
+  elements.compactSearchWrapper.classList.add('hidden');
+  elements.modeSwitcherBtn.classList.remove('hidden');
+
+  console.log('AI chat interface shown');
 }
 
 // Switch back to search mode from AI mode
@@ -247,16 +274,57 @@ function switchToSearchMode() {
     state.mode = 'search';
     updateModeUI();
 
-    // Switch to search results view
+    // Switch to search results view or home
     document.body.classList.remove('chat-state');
-    document.body.classList.add('results-state');
-    elements.searchResultsSection.classList.remove('hidden');
     elements.chatSection.classList.add('hidden');
+
+    // If there are search results, show them; otherwise go home
+    if (!elements.resultsContainer.classList.contains('hidden')) {
+      document.body.classList.add('results-state');
+      elements.searchResultsSection.classList.remove('hidden');
+    } else {
+      returnToHome();
+    }
 
     // Show search box again
     elements.compactSearchWrapper.classList.remove('hidden');
     elements.modeSwitcherBtn.classList.add('hidden');
   }
+}
+
+// Setup Logo Navigation to Homepage
+function setupLogoNavigation() {
+  const logos = document.querySelectorAll('.logo, .compact-logo');
+  logos.forEach(logo => {
+    logo.style.cursor = 'pointer';
+    logo.addEventListener('click', returnToHome);
+  });
+}
+
+// Return to Homepage
+function returnToHome() {
+  // Reset to home state
+  document.body.classList.remove('results-state', 'chat-state');
+  document.body.classList.add('home-state');
+
+  // Hide content container
+  elements.contentContainer.classList.add('hidden');
+
+  // Clear inputs
+  elements.searchInput.value = '';
+  elements.compactSearchInput.value = '';
+  elements.chatInput.value = '';
+
+  // Reset mode to search
+  if (state.mode === 'ai') {
+    state.mode = 'search';
+    updateModeUI();
+  }
+
+  // Clear conversation history
+  state.conversationHistory = [];
+
+  console.log('Returned to homepage');
 }
 
 // Handle Search/Chat Submit
