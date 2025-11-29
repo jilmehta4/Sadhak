@@ -14,6 +14,7 @@ const router = express.Router();
 function formatResult(chunkData) {
     const base = {
         chunkId: chunkData.id,
+        resourceId: chunkData.resourceId,
         resourceType: chunkData.resourceType,
         resourceName: chunkData.resourceFileName,
         language: chunkData.language

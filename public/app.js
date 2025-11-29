@@ -9,7 +9,9 @@ const state = {
   isVoiceRecording: false,
   recognition: null,
   conversationHistory: [],
-  currentLanguage: 'en'
+  currentLanguage: 'en',
+  isAIResponding: false,
+  currentReader: null // Store the stream reader for stopping
 };
 
 // DOM Elements
@@ -22,6 +24,8 @@ const elements = {
   modeText: document.getElementById('mode-text'),
 
   // Compact header elements
+  modeSwitcherBtn: document.getElementById('mode-switcher-btn'),
+  compactSearchWrapper: document.getElementById('compact-search-wrapper'),
   compactSearchForm: document.getElementById('compact-search-form'),
   compactSearchInput: document.getElementById('compact-search-input'),
   compactVoiceBtn: document.getElementById('compact-voice-btn'),
@@ -42,21 +46,38 @@ const elements = {
 
   // Chat
   chatMessages: document.getElementById('chat-messages'),
+  chatForm: document.getElementById('chat-form'),
+  chatInput: document.getElementById('chat-input'),
+  sendBtn: document.getElementById('send-btn'),
+  stopBtn: document.getElementById('stop-btn'),
 
   // Voice indicator
   voiceIndicator: document.getElementById('voice-indicator'),
-  stopVoiceBtn: document.getElementById('stop-voice')
+  stopVoiceBtn: document.getElementById('stop-voice'),
+
+  // PDF Preview Modal
+  pdfModal: document.getElementById('pdf-preview-modal'),
+  modalOverlay: document.getElementById('modal-overlay'),
+  modalCloseBtn: document.getElementById('modal-close-btn'),
+  modalBookName: document.getElementById('modal-book-name'),
+  modalPageBadge: document.getElementById('modal-page-badge'),
+  modalPreviewText: document.getElementById('modal-preview-text'),
+  continueReadingBtn: document.getElementById('continue-reading-btn')
 };
 
 // Initialize Application
 function init() {
+  console.log('App initializing...');
   setupEventListeners();
   initializeVoiceRecognition();
   checkOllamaStatus();
+  console.log('App initialized successfully');
 }
 
 // Event Listeners
 function setupEventListeners() {
+  console.log('Setting up event listeners...');
+
   // Search form submissions (both home and compact)
   elements.searchForm.addEventListener('submit', handleSearch);
   elements.compactSearchForm.addEventListener('submit', handleSearch);
@@ -75,8 +96,32 @@ function setupEventListeners() {
   elements.stopVoiceBtn.addEventListener('click', stopVoiceRecognition);
 
   // AI mode toggles
-  elements.aiToggle.addEventListener('click', toggleAIMode);
-  elements.compactAiToggle.addEventListener('click', toggleAIMode);
+  elements.aiToggle.addEventListener('click', () => {
+    console.log('AI toggle clicked');
+    toggleAIMode();
+  });
+  elements.compactAiToggle.addEventListener('click', () => {
+    console.log('Compact AI toggle clicked');
+    toggleAIMode();
+  });
+
+  // Mode switcher button
+  elements.modeSwitcherBtn.addEventListener('click', switchToSearchMode);
+
+  // Chat form and buttons
+  elements.chatForm.addEventListener('submit', handleChatSubmit);
+  elements.stopBtn.addEventListener('click', stopAIResponse);
+
+  // PDF Modal events
+  elements.modalCloseBtn.addEventListener('click', hidePDFPreview);
+  elements.modalOverlay.addEventListener('click', hidePDFPreview);
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !elements.pdfModal.classList.contains('hidden')) {
+      hidePDFPreview();
+    }
+  });
+
+  console.log('Event listeners set up successfully');
 }
 
 // Voice Recognition Setup
@@ -157,26 +202,61 @@ function stopVoiceRecognition() {
 
 // Toggle AI Mode
 function toggleAIMode() {
+  console.log('toggleAIMode called, current mode:', state.mode);
   state.mode = state.mode === 'search' ? 'ai' : 'search';
+  console.log('New mode:', state.mode);
   updateModeUI();
 }
 
 function updateModeUI() {
   const isAIMode = state.mode === 'ai';
+  console.log('updateModeUI called, isAIMode:', isAIMode);
 
   // Update button states
   elements.aiToggle.classList.toggle('active', isAIMode);
   elements.compactAiToggle.classList.toggle('active', isAIMode);
+  console.log('Button active classes toggled');
 
   // Update mode text
   const modeText = isAIMode ? 'AI Assistant' : 'Search Mode';
   elements.modeText.textContent = modeText;
   elements.compactModeText.textContent = modeText;
+  console.log('Mode text updated to:', modeText);
 
   // Update placeholder
   const placeholder = isAIMode ? 'Ask me anything...' : 'Search or ask me anything...';
   elements.searchInput.placeholder = placeholder;
   elements.compactSearchInput.placeholder = placeholder;
+  console.log('Placeholder updated to:', placeholder);
+
+  // Toggle compact header elements visibility in AI mode
+  if (document.body.classList.contains('chat-state')) {
+    elements.compactSearchWrapper.classList.toggle('hidden', isAIMode);
+    elements.modeSwitcherBtn.classList.toggle('hidden', !isAIMode);
+    console.log('Compact header visibility toggled (chat-state)');
+  } else {
+    console.log('Not in chat-state, skipping compact header toggle');
+  }
+
+  console.log('updateModeUI complete');
+}
+
+// Switch back to search mode from AI mode
+function switchToSearchMode() {
+  if (state.mode === 'ai') {
+    state.mode = 'search';
+    updateModeUI();
+
+    // Switch to search results view
+    document.body.classList.remove('chat-state');
+    document.body.classList.add('results-state');
+    elements.searchResultsSection.classList.remove('hidden');
+    elements.chatSection.classList.add('hidden');
+
+    // Show search box again
+    elements.compactSearchWrapper.classList.remove('hidden');
+    elements.modeSwitcherBtn.classList.add('hidden');
+  }
 }
 
 // Handle Search/Chat Submit
@@ -193,6 +273,12 @@ async function handleSearch(e) {
   document.body.classList.remove('home-state');
   document.body.classList.add(state.mode === 'ai' ? 'chat-state' : 'results-state');
   elements.contentContainer.classList.remove('hidden');
+
+  // Update header visibility for AI mode
+  if (state.mode === 'ai') {
+    elements.compactSearchWrapper.classList.add('hidden');
+    elements.modeSwitcherBtn.classList.remove('hidden');
+  }
 
   if (state.mode === 'ai') {
     await handleAIChat(query);
@@ -254,6 +340,20 @@ function displaySearchResults(results) {
     card.className = 'result-card';
     card.style.animationDelay = `${index * 0.1}s`;
 
+    // Add data attributes for PDF preview
+    if (result.resourceType === 'pdf') {
+      card.dataset.resourceType = 'pdf';
+      card.dataset.resourceId = result.chunkId; // Using chunkId as proxy for resourceId if not directly available, but better to ensure we have resourceId
+      // Note: In search.js, formatResult uses chunkData.resourceId for image, let's ensure we have it for PDF too.
+      // Looking at search.js, formatResult for PDF doesn't explicitly include resourceId in the returned object, 
+      // but it spreads 'base' which has chunkId. We might need to update search.js to include resourceId if it's different.
+      // However, looking at search.js:28 for image it uses chunkData.resourceId.
+      // Let's assume we can pass the whole result object to the click handler.
+
+      // We'll attach the click listener after rendering
+      card.onclick = () => showPDFPreview(result);
+    }
+
     card.innerHTML = `
             <div class="result-type-badge">${result.resourceType}</div>
             <div class="result-meta">
@@ -267,6 +367,16 @@ function displaySearchResults(results) {
 
     return card.outerHTML;
   }).join('');
+
+  // Re-attach event listeners because innerHTML string injection kills them
+  // We need to select the cards again
+  const cards = elements.resultsList.querySelectorAll('.result-card');
+  cards.forEach((card, index) => {
+    const result = results[index];
+    if (result.resourceType === 'pdf') {
+      card.addEventListener('click', () => showPDFPreview(result));
+    }
+  });
 }
 
 // Highlight query in results
@@ -281,21 +391,27 @@ function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// Handle AI Chat
-async function handleAIChat(message) {
-  // Show chat section
-  elements.searchResultsSection.classList.add('hidden');
-  elements.chatSection.classList.remove('hidden');
+// Handle chat form submission (new chat input at bottom)
+async function handleChatSubmit(e) {
+  e.preventDefault();
+
+  const message = elements.chatInput.value.trim();
+  if (!message || state.isAIResponding) return;
+
+  // Detect language from input
+  state.currentLanguage = detectLanguage(message);
 
   // Add user message
   addChatMessage('user', message);
 
+  // Clear input
+  elements.chatInput.value = '';
+
+  // Disable input and toggle buttons
+  setChatInputState(false);
+
   // Add typing indicator
   const typingIndicator = addTypingIndicator();
-
-  // Clear input
-  elements.searchInput.value = '';
-  elements.compactSearchInput.value = '';
 
   try {
     const response = await fetch('/chat', {
@@ -318,13 +434,14 @@ async function handleAIChat(message) {
 
     // Handle streaming response
     const reader = response.body.getReader();
+    state.currentReader = reader;
     const decoder = new TextDecoder();
     let aiMessage = '';
     let messageElement = null;
 
     while (true) {
       const { done, value } = await reader.read();
-      if (done) break;
+      if (done || !state.isAIResponding) break;
 
       const chunk = decoder.decode(value);
       const lines = chunk.split('\n').filter(line => line.trim().startsWith('data:'));
@@ -364,6 +481,134 @@ async function handleAIChat(message) {
     console.error('Chat error:', error);
     typingIndicator.remove();
     addChatMessage('ai', 'Sorry, I encountered an error. Please make sure Ollama is running and try again.');
+  } finally {
+    // Re-enable input and toggle buttons back
+    setChatInputState(true);
+    state.currentReader = null;
+  }
+}
+
+// Set chat input and button states
+function setChatInputState(enabled) {
+  state.isAIResponding = !enabled;
+  elements.chatInput.disabled = !enabled;
+
+  if (enabled) {
+    // Show send button, hide stop button
+    elements.sendBtn.classList.remove('hidden');
+    elements.stopBtn.classList.add('hidden');
+  } else {
+    // Hide send button, show stop button
+    elements.sendBtn.classList.add('hidden');
+    elements.stopBtn.classList.remove('hidden');
+  }
+}
+
+// Stop AI response
+function stopAIResponse() {
+  state.isAIResponding = false;
+
+  // Cancel the stream reader if it exists
+  if (state.currentReader) {
+    state.currentReader.cancel();
+    state.currentReader = null;
+  }
+
+  // Re-enable input
+  setChatInputState(true);
+}
+
+// Handle AI Chat (from main search box)
+async function handleAIChat(message) {
+  // Show chat section
+  elements.searchResultsSection.classList.add('hidden');
+  elements.chatSection.classList.remove('hidden');
+
+  // Add user message
+  addChatMessage('user', message);
+
+  // Add typing indicator
+  const typingIndicator = addTypingIndicator();
+
+  // Clear input
+  elements.searchInput.value = '';
+  elements.compactSearchInput.value = '';
+
+  // Disable chat input temporarily
+  setChatInputState(false);
+
+  try {
+    const response = await fetch('/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        message,
+        conversationHistory: state.conversationHistory
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('AI service unavailable');
+    }
+
+    // Remove typing indicator
+    typingIndicator.remove();
+
+    // Handle streaming response
+    const reader = response.body.getReader();
+    state.currentReader = reader;
+    const decoder = new TextDecoder();
+    let aiMessage = '';
+    let messageElement = null;
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done || !state.isAIResponding) break;
+
+      const chunk = decoder.decode(value);
+      const lines = chunk.split('\n').filter(line => line.trim().startsWith('data:'));
+
+      for (const line of lines) {
+        try {
+          const data = JSON.parse(line.replace('data: ', ''));
+
+          if (data.chunk && !data.done) {
+            aiMessage += data.chunk;
+
+            if (!messageElement) {
+              messageElement = addChatMessage('ai', aiMessage);
+            } else {
+              updateChatMessage(messageElement, aiMessage);
+            }
+          }
+
+          if (data.done) {
+            // Update conversation history
+            state.conversationHistory.push(
+              { role: 'user', content: message },
+              { role: 'assistant', content: data.fullResponse || aiMessage }
+            );
+
+            // Update language if detected
+            if (data.detectedLanguage) {
+              state.currentLanguage = data.detectedLanguage;
+            }
+          }
+        } catch (e) {
+          // Skip invalid JSON
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Chat error:', error);
+    typingIndicator.remove();
+    addChatMessage('ai', 'Sorry, I encountered an error. Please make sure Ollama is running and try again.');
+  } finally {
+    // Re-enable chat input
+    setChatInputState(true);
+    state.currentReader = null;
   }
 }
 
@@ -448,3 +693,53 @@ async function checkOllamaStatus() {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', init);
+
+// PDF Preview Functions
+function showPDFPreview(result) {
+  console.log('Opening PDF preview for:', result);
+
+  // Populate modal data
+  elements.modalBookName.textContent = result.resourceName;
+
+  if (result.page) {
+    elements.modalPageBadge.textContent = `Page ${result.page}`;
+    elements.modalPageBadge.classList.remove('hidden');
+  } else {
+    elements.modalPageBadge.classList.add('hidden');
+  }
+
+  // Highlight query in preview text
+  elements.modalPreviewText.innerHTML = highlightQuery(result.text, elements.searchInput.value);
+
+  // Setup Continue Reading button
+  elements.continueReadingBtn.onclick = () => openPDFAtPage(result);
+
+  // Show modal
+  elements.pdfModal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden'; // Prevent background scrolling
+}
+
+function hidePDFPreview() {
+  elements.pdfModal.classList.add('hidden');
+  document.body.style.overflow = ''; // Restore scrolling
+}
+
+function openPDFAtPage(result) {
+  // Construct URL with page fragment
+  // We need the resource ID. In search.js formatResult, we need to ensure resourceId is passed.
+  // Currently formatResult returns chunkId. Let's verify if we have resourceId.
+  // If not, we might need to fetch it or use chunkId if it maps 1:1 (it doesn't).
+  // Wait, in search.js: chunkData has resourceId.
+  // We need to make sure search.js returns resourceId in the result object.
+
+  // Assuming search.js is updated to include resourceId, or we use a workaround.
+  // Let's check search.js again. It returns chunkId, resourceType, resourceName.
+  // It does NOT return resourceId for PDF in the current code!
+  // We need to update search.js to include resourceId.
+
+  const resourceId = result.resourceId || result.chunkId; // Fallback, but might be wrong
+  const page = result.page || 1;
+
+  const url = `/resource/pdf/${resourceId}#page=${page}`;
+  window.open(url, '_blank');
+}

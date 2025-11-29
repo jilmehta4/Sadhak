@@ -46,4 +46,41 @@ router.get('/image/:id', (req, res) => {
     }
 });
 
+/**
+ * GET /resource/pdf/:id
+ * Serve a PDF resource
+ */
+router.get('/pdf/:id', (req, res) => {
+    try {
+        const { id } = req.params;
+
+        // Get resource from database
+        const resource = dbManager.getResourceById(id);
+
+        if (!resource) {
+            return res.status(404).json({ error: 'Resource not found' });
+        }
+
+        if (resource.type !== 'pdf') {
+            return res.status(400).json({ error: 'Resource is not a PDF' });
+        }
+
+        // Check if file exists
+        if (!fs.existsSync(resource.filePath)) {
+            return res.status(404).json({ error: 'PDF file not found on disk' });
+        }
+
+        // Send the PDF with proper content type
+        res.contentType('application/pdf');
+        res.sendFile(path.resolve(resource.filePath));
+
+    } catch (error) {
+        console.error('Error serving PDF:', error);
+        res.status(500).json({
+            error: 'Internal server error',
+            message: error.message
+        });
+    }
+});
+
 module.exports = router;
