@@ -139,7 +139,7 @@ body {
   color: var(--text-light);
 }
 
-/* Icon Buttons (Voice & AI) */
+/* Icon Buttons (Voice) */
 .icon-btn {
   background: transparent;
   border: none;
@@ -160,6 +160,8 @@ body {
   height: 18px;
   color: var(--purple-primary);
   transition: all var(--transition-fast);
+  z-index: 2;
+  position: relative;
 }
 
 .icon-btn:hover {
@@ -170,49 +172,112 @@ body {
   transform: scale(0.95);
 }
 
-/* Voice Button Active State */
-.voice-btn.recording {
-  background: var(--red-accent);
-}
-
-.voice-btn.recording svg {
-  color: white;
-}
-
-.pulse-ring {
+/* Revolving Light Effect (Google AI Style) */
+.revolving-light {
   position: absolute;
-  width: 100%;
-  height: 100%;
+  inset: -2px;
   border-radius: 50%;
-  border: 2px solid var(--red-accent);
+  padding: 2px;
+  background: conic-gradient(from 0deg,
+      #EAE8E5 0deg,
+      #512D7C 120deg,
+      #7D2524 240deg,
+      #EAE8E5 360deg);
   opacity: 0;
-  animation: pulse 1.5s ease-out infinite;
+  transition: opacity var(--transition-med);
   pointer-events: none;
+  z-index: 0;
 }
 
-.voice-btn.recording .pulse-ring {
-  opacity: 1;
+.revolving-light::before {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: 50%;
+  background: var(--glass-bg);
 }
 
-@keyframes pulse {
+@keyframes revolve {
   0% {
-    transform: scale(1);
-    opacity: 1;
+    transform: rotate(0deg);
   }
 
   100% {
-    transform: scale(1.5);
-    opacity: 0;
+    transform: rotate(360deg);
   }
 }
 
-/* AI Toggle Active State */
-.ai-toggle.active {
-  background: var(--purple-primary);
+/* Voice Button Active State with Revolving Light */
+.voice-btn.recording .revolving-light {
+  opacity: 1;
+  animation: revolve 2s linear infinite;
 }
 
-.ai-toggle.active svg {
+.voice-btn.recording {
+  background: transparent;
+}
+
+.voice-btn.recording svg {
+  color: var(--red-accent);
+}
+
+/* AI Mode Button Styling */
+.ai-toggle-btn {
+  background: transparent;
+  border: 2px solid transparent;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all var(--transition-med);
+  position: relative;
+  flex-shrink: 0;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--purple-primary);
+  font-family: inherit;
+}
+
+.ai-toggle-btn .ai-mode-text {
+  position: relative;
+  z-index: 2;
+  white-space: nowrap;
+}
+
+.ai-toggle-btn .revolving-light {
+  border-radius: 20px;
+}
+
+.ai-toggle-btn .revolving-light::before {
+  border-radius: 18px;
+}
+
+.ai-toggle-btn:hover {
+  background: rgba(81, 45, 124, 0.05);
+  border-color: var(--glass-border);
+}
+
+.ai-toggle-btn:active {
+  transform: scale(0.98);
+}
+
+/* AI Toggle Active State with Revolving Light */
+.ai-toggle-btn.active {
+  background: var(--purple-primary);
   color: white;
+  border-color: var(--purple-primary);
+}
+
+.ai-toggle-btn.active .revolving-light {
+  opacity: 1;
+  animation: revolve 2s linear infinite;
+}
+
+.ai-toggle-btn.active .revolving-light::before {
+  background: var(--purple-primary);
 }
 
 /* Mode Indicator */
