@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const session = require('express-session');
 const path = require('path');
 const config = require('./config');
 const dbManager = require('./db/database');
@@ -12,6 +13,8 @@ const vectorStore = require('./db/vectorStore');
 const searchRouter = require('./routes/search');
 const resourcesRouter = require('./routes/resources');
 const chatRouter = require('./routes/chat');
+const authRouter = require('./routes/auth');
+const historyRouter = require('./routes/history');
 
 
 const app = express();
@@ -21,13 +24,27 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Session middleware for authentication
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'gurutattva-secret-key-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+        httpOnly: true,
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    }
+}));
+
 // Serve static files (frontend)
 app.use(express.static(path.join(__dirname, 'public')));
 
 // API routes
+app.use('/auth', authRouter);
 app.use('/search', searchRouter);
 app.use('/resource', resourcesRouter);
 app.use('/chat', chatRouter);
+app.use('/history', historyRouter);
 
 
 // Health check endpoint

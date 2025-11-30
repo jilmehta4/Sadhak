@@ -6,8 +6,17 @@ const express = require('express');
 const router = express.Router();
 const ollamaClient = require('../utils/ollama');
 const dbManager = require('../db/database');
+const AuthDatabase = require('../db/authDatabase');
 const vectorStore = require('../db/vectorStore');
 const embeddingGenerator = require('../utils/embeddings');
+
+// Initialize auth database
+let authDb;
+function initAuthDb() {
+    if (dbManager.db && !authDb) {
+        authDb = new AuthDatabase(dbManager.db);
+    }
+}
 
 /**
  * POST /chat
@@ -15,7 +24,9 @@ const embeddingGenerator = require('../utils/embeddings');
  */
 router.post('/', async (req, res) => {
     try {
+        initAuthDb();
         const { message, conversationHistory = [], resourceLanguage = 'en' } = req.body;
+        const userId = req.session?.userId; // Get user ID from session
 
         if (!message) {
             return res.status(400).json({
@@ -83,6 +94,23 @@ router.post('/', async (req, res) => {
             detectedLanguage
         })}\n\n`);
         res.end();
+
+        // Save conversation to history (if user is logged in)
+        if (userId && authDb && fullResponse) {
+            try {
+                const updatedConversation = [
+                    ...conversationHistory,
+                    { role: 'user', content: message },
+                    { role: 'assistant', content: fullResponse }
+                ];
+                authDb.saveChatHistory(userId, updatedConversation);
+                dbManager.save(); // Persist to disk
+                console.log(`Saved chat history for user ${userId}`);
+            } catch (error) {
+                console.error('Failed to save chat history:', error);
+                // Don't fail the request if history saving fails
+            }
+        }
 
     } catch (error) {
         console.error('Error in chat route:', error);
