@@ -1,0 +1,11 @@
+.standalone-new-chat-btn:active {
+    transform: translateY(0) scale(0.98);
+}
+
+.standalone-new-chat-btn svg {
+    flex-shrink: 0;
+}
+
+.standalone-new-chat-btn span {
+    font-weight: 600;
+}

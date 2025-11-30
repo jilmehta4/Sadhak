@@ -1,0 +1,86 @@
+/* ========================================
+   FOOTER
+   ======================================== */
+
+.site-footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #f9f9f9;
+    border-top: 1px solid #e5e5e5;
+    padding: 0.75rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.8125rem;
+    color: #5f6368;
+    z-index: 40;
+    height: 48px;
+}
+
+.footer-left {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.footer-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.footer-link {
+    color: #5f6368;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-link:hover {
+    color: var(--purple-primary);
+    text-decoration: underline;
+}
+
+.footer-copyright {
+    color: #80868b;
+}
+
+/* Adjust body padding to account for footer */
+body {
+    padding-bottom: 48px;
+}
+
+/* Adjust chat section to account for footer */
+.chat-section {
+    margin-bottom: 48px;
+    min-height: calc(100vh - 64px - 48px);
+    /* Header + Footer */
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .site-footer {
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        height: auto;
+    }
+
+    .footer-left,
+    .footer-right {
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    body {
+        padding-bottom: 80px;
+        /* Taller footer on mobile */
+    }
+
+    .chat-section {
+        margin-bottom: 80px;
+        min-height: calc(100vh - 64px - 80px);
+    }
+}

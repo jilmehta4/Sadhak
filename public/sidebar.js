@@ -1,10 +1,10 @@
 /**
- * Sidebar functionality for AI mode
+ * Sidebar functionality for AI mode - Gemini Style
  */
 
 // Sidebar state
 const sidebarState = {
-    isCollapsed: false,
+    isCollapsed: true, // Start collapsed by default (icon-only)
     currentChatId: null
 };
 
@@ -13,73 +13,107 @@ const sidebarElements = {
     sidebar: document.getElementById('sidebar-menu'),
     overlay: document.getElementById('sidebar-overlay'),
     toggleBtn: document.getElementById('sidebar-toggle-btn'),
-    menuToggleBtn: document.getElementById('menu-toggle-btn'),
     newChatBtn: document.getElementById('sidebar-new-chat-btn'),
     historyList: document.getElementById('sidebar-history-list'),
-    compactSearch: document.getElementById('compact-header-search'),
-    compactSearchInput: document.getElementById('compact-header-search-input')
+    standaloneNewChatBtn: null // Will be created dynamically
 };
 
 // Initialize sidebar
 function initSidebar() {
     if (!sidebarElements.sidebar) return;
 
+    // Check authentication state and update sidebar visibility
+    updateSidebarAuthState();
+
+    // Create standalone New Chat button for non-logged-in users
+    createStandaloneNewChatButton();
+
+    // Start with collapsed state (icon-only)
+    sidebarElements.sidebar.classList.add('collapsed');
+    document.querySelector('.chat-section')?.classList.add('sidebar-collapsed');
+
     // Toggle sidebar
     if (sidebarElements.toggleBtn) {
         sidebarElements.toggleBtn.addEventListener('click', toggleSidebar);
     }
 
-    if (sidebarElements.menuToggleBtn) {
-        sidebarElements.menuToggleBtn.addEventListener('click', toggleSidebar);
-    }
-
     // New chat from sidebar
     if (sidebarElements.newChatBtn) {
-        sidebarElements.newChatBtn.addEventListener('click', startNewChat);
+        sidebarElements.newChatBtn.addEventListener('click', () => {
+            // Stop AI if responding
+            if (typeof stopAIResponse === 'function') {
+                stopAIResponse();
+            }
+            startNewChat();
+        });
     }
 
     // Close sidebar on overlay click (mobile)
     if (sidebarElements.overlay) {
-        sidebarElements.overlay.addEventListener('click', closeSidebar);
-    }
-
-    // Compact header search
-    if (sidebarElements.compactSearchInput) {
-        sidebarElements.compactSearchInput.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') {
-                handleCompactSearch();
-            }
-        });
+        sidebarElements.overlay.addEventListener('click', collapseSidebar);
     }
 
     // Load chat history if user is logged in
     loadChatHistory();
+
+    // Listen for authentication state changes
+    window.addEventListener('auth-state-changed', updateSidebarAuthState);
 }
 
-// Toggle sidebar
-function toggleSidebar() {
-    sidebarState.isCollapsed = !sidebarState.isCollapsed;
+// Update sidebar visibility based on authentication state
+function updateSidebarAuthState() {
+    const chatSection = document.querySelector('.chat-section');
 
-    if (sidebarState.isCollapsed) {
-        sidebarElements.sidebar.classList.add('hidden');
-        sidebarElements.overlay.classList.add('hidden');
-        document.body.classList.add('sidebar-collapsed');
+    // Check if authState exists (from auth.js)
+    if (typeof authState !== 'undefined' && authState.currentUser) {
+        // User is logged in - show sidebar (collapsed by default)
+        sidebarElements.sidebar?.classList.remove('auth-hidden');
+        chatSection?.classList.remove('sidebar-hidden');
+        chatSection?.classList.add('sidebar-collapsed');
+
+        // Hide standalone button
+        sidebarElements.standaloneNewChatBtn?.classList.add('hidden');
     } else {
-        sidebarElements.sidebar.classList.remove('hidden');
-        // Show overlay only on mobile
-        if (window.innerWidth <= 768) {
-            sidebarElements.overlay.classList.remove('hidden');
-        }
-        document.body.classList.remove('sidebar-collapsed');
+        // User is not logged in - hide sidebar completely
+        sidebarElements.sidebar?.classList.add('auth-hidden');
+        chatSection?.classList.add('sidebar-hidden');
+        chatSection?.classList.remove('sidebar-collapsed');
+
+        // Show standalone button
+        sidebarElements.standaloneNewChatBtn?.classList.remove('hidden');
     }
 }
 
-// Close sidebar
-function closeSidebar() {
+// Create standalone New Chat button for non-logged-in users
+function createStandaloneNewChatButton() {
+    sidebarState.isCollapsed = !sidebarState.isCollapsed;
+    const chatSection = document.querySelector('.chat-section');
+
+    if (sidebarState.isCollapsed) {
+        // Collapse to icon-only (72px)
+        sidebarElements.sidebar?.classList.add('collapsed');
+        chatSection?.classList.add('sidebar-collapsed');
+        sidebarElements.overlay?.classList.remove('active');
+    } else {
+        // Expand to full width (260px)
+        sidebarElements.sidebar?.classList.remove('collapsed');
+        chatSection?.classList.remove('sidebar-collapsed');
+
+        // Show overlay only on mobile
+        if (window.innerWidth <= 768) {
+            sidebarElements.sidebar?.classList.add('expanded');
+            sidebarElements.overlay?.classList.add('active');
+        }
+    }
+}
+
+// Collapse sidebar (used for mobile overlay click)
+function collapseSidebar() {
     sidebarState.isCollapsed = true;
-    sidebarElements.sidebar.classList.add('hidden');
-    sidebarElements.overlay.classList.add('hidden');
-    document.body.classList.add('sidebar-collapsed');
+    sidebarElements.sidebar?.classList.add('collapsed');
+    sidebarElements.sidebar?.classList.remove('expanded');
+    document.querySelector('.chat-section')?.classList.add('sidebar-collapsed');
+    sidebarElements.overlay?.classList.remove('active');
 }
 
 // Load chat history
@@ -119,9 +153,12 @@ function renderChatHistory(history) {
 
         // Get first user message as title
         const firstUserMsg = item.conversation.find(msg => msg.role === 'user');
-        const title = firstUserMsg ? firstUserMsg.content.substring(0, 50) : 'Untitled chat';
+        const title = firstUserMsg ? firstUserMsg.content.substring(0, 40) : 'Untitled chat';
 
-        historyItem.textContent = title + (title.length >= 50 ? '...' : '');
+        // Create span for text (hidden when collapsed)
+        const textSpan = document.createElement('span');
+        textSpan.textContent = title + (title.length >= 40 ? '...' : '');
+        historyItem.appendChild(textSpan);
 
         // Click to load conversation
         historyItem.addEventListener('click', () => loadConversation(item));
@@ -135,7 +172,7 @@ function showEmptyHistory() {
     if (!sidebarElements.historyList) return;
 
     sidebarElements.historyList.innerHTML = `
-        <div style="padding: 2rem 1rem; text-align: center; color: var(--text-medium); font-size: 0.875rem;">
+        <div style="padding: 2rem 1rem; text-align: center; color: #5f6368; font-size: 0.875rem;">
             No chat history yet.<br>Start a conversation!
         </div>
     `;
@@ -144,15 +181,21 @@ function showEmptyHistory() {
 // Load a conversation from history
 function loadConversation(historyItem) {
     // Clear current messages
-    elements.chatMessages.innerHTML = '';
+    if (typeof elements !== 'undefined' && elements.chatMessages) {
+        elements.chatMessages.innerHTML = '';
+    }
 
     // Load conversation history
-    state.conversationHistory = historyItem.conversation;
+    if (typeof state !== 'undefined') {
+        state.conversationHistory = historyItem.conversation;
+    }
     sidebarState.currentChatId = historyItem.id;
 
     // Render messages
     historyItem.conversation.forEach(msg => {
-        addChatMessage(msg.role === 'user' ? 'user' : 'ai', msg.content);
+        if (typeof addChatMessage === 'function') {
+            addChatMessage(msg.role === 'user' ? 'user' : 'ai', msg.content);
+        }
     });
 
     // Update active state
@@ -160,25 +203,12 @@ function loadConversation(historyItem) {
         item.classList.toggle('active', item.dataset.historyId == historyItem.id);
     });
 
-    // Close sidebar on mobile
+    // Collapse sidebar on mobile
     if (window.innerWidth <= 768) {
-        closeSidebar();
+        collapseSidebar();
     }
 
     console.log('Loaded conversation:', historyItem.id);
-}
-
-// Handle compact header search
-function handleCompactSearch() {
-    const query = sidebarElements.compactSearchInput.value.trim();
-
-    if (!query) return;
-
-    // Use existing search functionality
-    elements.searchInput.value = query;
-    elements.compactSearchInput.value = query;
-
-    handleSearch(new Event('submit'));
 }
 
 // Initialize sidebar when DOM is ready

@@ -62,6 +62,9 @@ function updateUIForLoggedInUser() {
 
     userAvatar.textContent = initials;
     userDisplayName.textContent = authState.currentUser.displayName || authState.currentUser.email.split('@')[0];
+
+    // Dispatch event for other components (e.g., sidebar)
+    window.dispatchEvent(new CustomEvent('auth-state-changed', { detail: { user: authState.currentUser } }));
 }
 
 // Update UI for logged out user
@@ -69,6 +72,9 @@ function updateUIForLoggedOutUser() {
     signInBtn.style.display = 'block';
     userMenu.classList.remove('show');
     authState.currentUser = null;
+
+    // Dispatch event for other components (e.g., sidebar)
+    window.dispatchEvent(new CustomEvent('auth-state-changed', { detail: { user: null } }));
 }
 
 // Open auth modal

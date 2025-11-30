@@ -504,6 +504,8 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  background: white;
+  /* Match chat-input-container */
 }
 
 .welcome-message {
@@ -1534,7 +1536,9 @@ body[lang="hi"],
 /* Make PDF result cards clickable */
 .result-card[data-resource-type="pdf"] {
   cursor: pointer;
-}/* AI Mode Button Styling - Matching Search Mode Button */
+}
+
+/* AI Mode Button Styling - Matching Search Mode Button */
 .ai-toggle-btn {
   display: flex;
   align-items: center;
@@ -1580,6 +1584,7 @@ body[lang="hi"],
   color: white;
   border-color: transparent;
 }
+
 /* Send Button - Icon Only */
 .send-btn {
   display: flex;
@@ -1653,279 +1658,283 @@ body[lang="hi"],
 .stop-btn:active {
   transform: translateY(0) scale(0.95);
 }
+
 /* AI Mode Button Styling - Matching Search Mode Button */
 .ai-toggle-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    color: var(--purple-primary);
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-med);
-    font-family: inherit;
-    position: relative;
-    flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  color: var(--purple-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-med);
+  font-family: inherit;
+  position: relative;
+  flex-shrink: 0;
 }
 
 .ai-toggle-btn .ai-mode-text {
-    position: relative;
-    z-index: 2;
-    white-space: nowrap;
+  position: relative;
+  z-index: 2;
+  white-space: nowrap;
 }
 
 .ai-toggle-btn .revolving-light {
-    display: none;
+  display: none;
 }
 
 .ai-toggle-btn:hover {
-    background: linear-gradient(135deg, var(--purple-primary) 0%, var(--red-accent) 100%);
-    color: white;
-    border-color: transparent;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, var(--purple-primary) 0%, var(--red-accent) 100%);
+  color: white;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .ai-toggle-btn:active {
-    transform: scale(0.98);
+  transform: scale(0.98);
 }
 
 .ai-toggle-btn.active {
-    background: linear-gradient(135deg, var(--purple-primary) 0%, var(--red-accent) 100%);
-    color: white;
-    border-color: transparent;
+  background: linear-gradient(135deg, var(--purple-primary) 0%, var(--red-accent) 100%);
+  color: white;
+  border-color: transparent;
 }
 
 /* Send Button - Icon Only */
 .send-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 50%;
-    color: var(--purple-primary);
-    cursor: pointer;
-    transition: all var(--transition-med);
-    flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 50%;
+  color: var(--purple-primary);
+  cursor: pointer;
+  transition: all var(--transition-med);
+  flex-shrink: 0;
 }
 
 .send-btn svg {
-    width: 18px;
-    height: 18px;
+  width: 18px;
+  height: 18px;
 }
 
 .send-btn span {
-    display: none;
+  display: none;
 }
 
 .send-btn:hover {
-    background: linear-gradient(135deg, var(--purple-primary) 0%, var(--red-accent) 100%);
-    color: white;
-    border-color: transparent;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, var(--purple-primary) 0%, var(--red-accent) 100%);
+  color: white;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 .send-btn:active {
-    transform: translateY(0) scale(0.95);
+  transform: translateY(0) scale(0.95);
 }
 
 /* Stop Button - Icon Only */
 .stop-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    background: var(--glass-bg);
-    border: 1px solid rgba(125, 37, 36, 0.3);
-    border-radius: 50%;
-    color: var(--red-accent);
-    cursor: pointer;
-    transition: all var(--transition-med);
-    flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: var(--glass-bg);
+  border: 1px solid rgba(125, 37, 36, 0.3);
+  border-radius: 50%;
+  color: var(--red-accent);
+  cursor: pointer;
+  transition: all var(--transition-med);
+  flex-shrink: 0;
 }
 
 .stop-btn svg {
-    width: 18px;
-    height: 18px;
+  width: 18px;
+  height: 18px;
 }
 
 .stop-btn span {
-    display: none;
+  display: none;
 }
 
 .stop-btn:hover {
-    background: var(--red-accent);
-    color: white;
-    border-color: transparent;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(125, 37, 36, 0.3);
+  background: var(--red-accent);
+  color: white;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(125, 37, 36, 0.3);
 }
 
 .stop-btn:active {
-    transform: translateY(0) scale(0.95);
+  transform: translateY(0) scale(0.95);
 }
+
 /* Mode Switcher Button (Search Mode button in AI chat) */
 .mode-switcher-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    color: var(--purple-primary);
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-med);
-    font-family: inherit;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  color: var(--purple-primary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-med);
+  font-family: inherit;
 }
 
 .mode-switcher-btn svg {
-    width: 18px;
-    height: 18px;
+  width: 18px;
+  height: 18px;
 }
 
 .mode-switcher-btn:hover {
-    background: linear-gradient(135deg, var(--purple-primary) 0%, var(--red-accent) 100%);
-    color: white;
-    border-color: transparent;
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
+  background: linear-gradient(135deg, var(--purple-primary) 0%, var(--red-accent) 100%);
+  color: white;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
 /* Chat Input Container */
 .chat-input-container {
-    padding: 1.5rem;
-    background: var(--glass-bg);
-    border-top: 1px solid var(--glass-border);
-    position: sticky;
-    bottom: 0;
+  padding: 1.5rem;
+  background: var(--glass-bg);
+  border-top: 1px solid var(--glass-border);
+  position: sticky;
+  bottom: 0;
 }
 
 .chat-input-form {
-    display: flex;
-    gap: 0.75rem;
-    align-items: center;
-    background: white;
-    border: 2px solid var(--glass-border);
-    border-radius: 30px;
-    padding: 0.5rem 0.75rem;
-    transition: all var(--transition-med);
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  background: white;
+  border: 2px solid var(--glass-border);
+  border-radius: 30px;
+  padding: 0.5rem 0.75rem;
+  transition: all var(--transition-med);
 }
 
 .chat-input-form:focus-within {
-    border-color: var(--purple-primary);
-    box-shadow: 0 0 0 3px rgba(81, 45, 124, 0.1);
+  border-color: var(--purple-primary);
+  box-shadow: 0 0 0 3px rgba(81, 45, 124, 0.1);
 }
 
 .chat-input {
-    flex: 1;
-    border: none;
-    background: transparent;
-    font-size: 1rem;
-    color: var(--text-dark);
-    outline: none;
-    padding: 0.5rem;
-    font-family: inherit;
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  color: var(--text-dark);
+  outline: none;
+  padding: 0.5rem;
+  font-family: inherit;
 }
 
 .chat-input::placeholder {
-    color: var(--text-light);
+  color: var(--text-light);
 }
 
 .chat-input:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
+  opacity: 0.6;
+  cursor: not-allowed;
 }
+
 /* Language Toggle Styling */
 .language-toggle {
-    display: flex;
-    gap: 0.5rem;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    padding: 0.25rem;
-    margin-top: 1rem;
-    justify-content: center;
+  display: flex;
+  gap: 0.5rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 0.25rem;
+  margin-top: 1rem;
+  justify-content: center;
 }
 
 .language-option {
-    padding: 0.5rem 1rem;
-    border: none;
-    background: transparent;
-    border-radius: 15px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all var(--transition-med);
-    color: var(--text-medium);
-    font-family: inherit;
+  padding: 0.5rem 1rem;
+  border: none;
+  background: transparent;
+  border-radius: 15px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-med);
+  color: var(--text-medium);
+  font-family: inherit;
 }
 
 .language-option.active {
-    background: linear-gradient(135deg, var(--purple-primary) 0%, var(--red-accent) 100%);
-    color: white;
-    box-shadow: var(--shadow-sm);
+  background: linear-gradient(135deg, var(--purple-primary) 0%, var(--red-accent) 100%);
+  color: white;
+  box-shadow: var(--shadow-sm);
 }
 
 .language-option:hover:not(.active) {
-    background: rgba(81, 45, 124, 0.1);
-    color: var(--purple-primary);
+  background: rgba(81, 45, 124, 0.1);
+  color: var(--purple-primary);
 }
 
 .language-option:active {
-    transform: scale(0.98);
+  transform: scale(0.98);
 }
 
 /* Compact header language toggle */
 .compact-header .language-toggle {
-    margin-top: 0;
-    margin-left: auto;
+  margin-top: 0;
+  margin-left: auto;
 }
+
 /* Language Toggle */
 .language-toggle {
-    display: flex;
-    gap: 0;
-    background: var(--glass-bg);
-    border: 1px solid var(--glass-border);
-    border-radius: 20px;
-    padding: 4px;
-    overflow: hidden;
-    flex-shrink: 0;
+  display: flex;
+  gap: 0;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 4px;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
 .lang-option {
-    padding: 0.4rem 0.9rem;
-    background: transparent;
-    border: none;
-    border-radius: 16px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: var(--text-medium);
-    cursor: pointer;
-    transition: all var(--transition-med);
-    font-family: inherit;
-    white-space: nowrap;
+  padding: 0.4rem 0.9rem;
+  background: transparent;
+  border: none;
+  border-radius: 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-medium);
+  cursor: pointer;
+  transition: all var(--transition-med);
+  font-family: inherit;
+  white-space: nowrap;
 }
 
 .lang-option.active {
-    background: linear-gradient(135deg, var(--purple-primary) 0%, var(--red-accent) 100%);
-    color: white;
+  background: linear-gradient(135deg, var(--purple-primary) 0%, var(--red-accent) 100%);
+  color: white;
 }
 
 .lang-option:hover:not(.active) {
-    background: rgba(81, 45, 124, 0.1);
-    color: var(--purple-primary);
+  background: rgba(81, 45, 124, 0.1);
+  color: var(--purple-primary);
 }
 
 /* ========================================
@@ -1955,7 +1964,8 @@ body[lang="hi"],
   font-size: 0.9375rem;
   font-weight: 500;
   color: var(--text-dark);
-  min-height: 44px; /* Touch target */
+  min-height: 44px;
+  /* Touch target */
 }
 
 .lang-selector-btn:hover {
@@ -2026,7 +2036,8 @@ body[lang="hi"],
   padding: 0.75rem 1rem;
   cursor: pointer;
   transition: all var(--transition-fast);
-  min-height: 48px; /* Touch target */
+  min-height: 48px;
+  /* Touch target */
   font-size: 0.9375rem;
   color: var(--text-dark);
 }
@@ -2058,7 +2069,8 @@ body[lang="hi"],
 
 .lang-dropdown-option:not(.active) .check-icon {
   opacity: 0;
-  width: 18px; /* Reserve space */
+  width: 18px;
+  /* Reserve space */
 }
 
 /* ========================================
@@ -2067,6 +2079,7 @@ body[lang="hi"],
 
 /* Tablet (481px - 768px) */
 @media (max-width: 768px) {
+
   /* Logo */
   .logo {
     font-size: clamp(2.5rem, 6vw, 4rem);
@@ -2104,6 +2117,7 @@ body[lang="hi"],
 
 /* Mobile (≤ 480px) */
 @media (max-width: 480px) {
+
   /* Home state adjustments */
   .home-state #home-container {
     padding: 1rem;
@@ -2366,4 +2380,41 @@ body[lang="hi"],
 /* Chat section needs position relative for sidebar */
 .chat-section {
   position: relative;
+}
+
+/* Standalone New Chat Button (for non-logged-in users in AI mode) */
+.standalone-new-chat-btn {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid var(--glass-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  color: var(--purple-primary);
+  flex-shrink: 0;
+  margin-right: 0.5rem;
+}
+
+.standalone-new-chat-btn:hover {
+  background: rgba(81, 45, 124, 0.05);
+  border-color: var(--purple-primary);
+}
+
+.standalone-new-chat-btn:active {
+  transform: scale(0.95);
+}
+
+.standalone-new-chat-btn svg {
+  flex-shrink: 0;
+}
+
+/* Chat input form layout with standalone button */
+.chat-input-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
