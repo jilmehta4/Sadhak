@@ -12,7 +12,8 @@ const state = {
   currentLanguage: 'en',
   selectedResourceLanguage: 'en', // NEW: for resource filtering
   isAIResponding: false,
-  currentReader: null // Store the stream reader for stopping
+  currentReader: null, // Store the stream reader for stopping
+  abortController: null // Store AbortController for cancelling fetch requests
 };
 
 // DOM Elements
@@ -303,23 +304,49 @@ function setupLogoNavigation() {
   });
 }
 
-// Setup Language Toggle
+// Setup Language Dropdown
 function setupLanguageToggle() {
-  const langButtons = document.querySelectorAll('.lang-option');
-  langButtons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const lang = btn.dataset.lang;
+  const selectorBtn = document.getElementById('lang-selector-btn');
+  const dropdown = document.getElementById('lang-dropdown');
+  const options = document.querySelectorAll('.lang-dropdown-option');
+
+  if (!selectorBtn || !dropdown) return;
+
+  // Toggle dropdown on button click
+  selectorBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle('hidden');
+  });
+
+  // Handle language selection
+  options.forEach(option => {
+    option.addEventListener('click', () => {
+      const lang = option.dataset.lang;
       setResourceLanguage(lang);
+      dropdown.classList.add('hidden');
     });
+  });
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!selectorBtn.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.classList.add('hidden');
+    }
   });
 }
 
 function setResourceLanguage(lang) {
   state.selectedResourceLanguage = lang;
 
-  // Update UI for all language toggle buttons
-  document.querySelectorAll('.lang-option').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.lang === lang);
+  // Update dropdown button text
+  const selectedText = document.getElementById('selected-lang-text');
+  if (selectedText) {
+    selectedText.textContent = lang === 'en' ? 'English' : 'हिंदी';
+  }
+
+  // Update active state in dropdown
+  document.querySelectorAll('.lang-dropdown-option').forEach(option => {
+    option.classList.toggle('active', option.dataset.lang === lang);
   });
 
   console.log(`Resource language set to: ${lang}`);
@@ -574,13 +601,18 @@ async function handleChatSubmit(e) {
       }
     }
   } catch (error) {
-    console.error('Chat error:', error);
+    if (error.name === 'AbortError') {
+      console.log('AI response stopped by user');
+    } else {
+      console.error('Chat error:', error);
+      addChatMessage('ai', 'Sorry, I encountered an error. Please make sure Ollama is running and try again.');
+    }
     typingIndicator.remove();
-    addChatMessage('ai', 'Sorry, I encountered an error. Please make sure Ollama is running and try again.');
   } finally {
     // Re-enable input and toggle buttons back
     setChatInputState(true);
     state.currentReader = null;
+    state.abortController = null;
   }
 }
 
@@ -604,10 +636,22 @@ function setChatInputState(enabled) {
 function stopAIResponse() {
   state.isAIResponding = false;
 
+  // Abort the fetch request if it exists
+  if (state.abortController) {
+    state.abortController.abort();
+    state.abortController = null;
+  }
+
   // Cancel the stream reader if it exists
   if (state.currentReader) {
     state.currentReader.cancel();
     state.currentReader = null;
+  }
+
+  // Remove typing indicator if it exists
+  const typingIndicator = document.querySelector('.typing-indicator');
+  if (typingIndicator) {
+    typingIndicator.remove();
   }
 
   // Re-enable input
@@ -634,11 +678,15 @@ async function handleAIChat(message) {
   setChatInputState(false);
 
   try {
+    // Create new AbortController
+    state.abortController = new AbortController();
+
     const response = await fetch('/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
+      signal: state.abortController.signal,
       body: JSON.stringify({
         message,
         conversationHistory: state.conversationHistory,
@@ -699,13 +747,18 @@ async function handleAIChat(message) {
       }
     }
   } catch (error) {
-    console.error('Chat error:', error);
+    if (error.name === 'AbortError') {
+      console.log('AI response stopped by user');
+    } else {
+      console.error('Chat error:', error);
+      addChatMessage('ai', 'Sorry, I encountered an error. Please make sure Ollama is running and try again.');
+    }
     typingIndicator.remove();
-    addChatMessage('ai', 'Sorry, I encountered an error. Please make sure Ollama is running and try again.');
   } finally {
     // Re-enable chat input
     setChatInputState(true);
     state.currentReader = null;
+    state.abortController = null;
   }
 }
 

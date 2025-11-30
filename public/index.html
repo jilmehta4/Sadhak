@@ -24,7 +24,36 @@
   <div id="home-container" class="home-container">
     <div class="logo-section">
       <h1 class="logo">Gurutattva</h1>
-      <p class="tagline">Search & Discover</p>
+      
+      <!-- Language Selector Dropdown -->
+      <div class="language-selector">
+        <button type="button" class="lang-selector-btn" id="lang-selector-btn" aria-label="Select language">
+          <svg class="globe-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span class="selected-lang-text" id="selected-lang-text">English</span>
+          <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </button>
+        
+        <div class="lang-dropdown hidden" id="lang-dropdown">
+          <div class="lang-dropdown-option active" data-lang="en">
+            <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>English</span>
+          </div>
+          <div class="lang-dropdown-option" data-lang="hi">
+            <svg class="check-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+            <span>हिंदी</span>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Main Search Box -->
@@ -57,12 +86,6 @@
           <span class="ai-mode-text">AI Mode</span>
         </button>
 
-        <!-- Language Toggle -->
-        <div class="language-toggle">
-          <button type="button" class="lang-option active" data-lang="en"
-            aria-label="English resources">English</button>
-          <button type="button" class="lang-option" data-lang="hi" aria-label="Hindi resources">हिंदी</button>
-        </div>
       </form>
 
       <div class="mode-indicator">
@@ -113,13 +136,7 @@
             <span class="ai-mode-text">AI Mode</span>
           </button>
 
-          <!-- Language Toggle -->
-          <div class="language-toggle">
-            <button type="button" class="lang-option active" data-lang="en"
-              aria-label="English resources">English</button>
-            <button type="button" class="lang-option" data-lang="hi" aria-label="Hindi resources">हिंदी</button>
-          </div>
-        </form>
+      </form>
 
         <div class="compact-mode-indicator">
           <span id="compact-mode-text">Search Mode</span>
