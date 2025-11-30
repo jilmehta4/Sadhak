@@ -485,10 +485,12 @@ body {
 
 /* Chat Section */
 .chat-section {
-  padding: 2rem;
-  max-width: 800px;
+  /* padding: 2rem;
+  max-width: 800px; */
   margin: 0 auto;
   animation: fadeIn 0.5s ease;
+  display: flex;
+  flex-direction: row;
 }
 
 .chat-container {
