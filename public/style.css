@@ -2362,3 +2362,8 @@ body[lang="hi"],
     max-height: 40vh;
   }
 }
+
+/* Chat section needs position relative for sidebar */
+.chat-section {
+  position: relative;
+}
