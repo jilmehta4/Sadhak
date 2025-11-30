@@ -1,0 +1,260 @@
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border-bottom: 1px solid #e0e0e0;
+    }
+
+    .sidebar-toggle-btn {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background var(--transition-fast);
+        color: var(--text-dark);
+    }
+
+    .sidebar-toggle-btn:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar-new-chat-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.625rem 1rem;
+        background: transparent;
+        border: 1px solid #d0d0d0;
+        border-radius: 22px;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-dark);
+    }
+
+    .sidebar-new-chat-btn:hover {
+        background: rgba(0, 0, 0, 0.03);
+        border-color: #b0b0b0;
+    }
+
+    .sidebar-new-chat-btn svg {
+        flex-shrink: 0;
+    }
+
+    /* Sidebar Content */
+    .sidebar-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0.5rem 0;
+    }
+
+    .sidebar-section-title {
+        padding: 0.75rem 1rem 0.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-medium);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* History List */
+    .sidebar-history-list {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .sidebar-history-item {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        transition: background var(--transition-fast);
+        font-size: 0.875rem;
+        color: var(--text-dark);
+        border-left: 3px solid transparent;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .sidebar-history-item:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar-history-item.active {
+        background: rgba(81, 45, 124, 0.08);
+        border-left-color: var(--purple-primary);
+        font-weight: 500;
+    }
+
+    /* Sidebar Footer */
+    .sidebar-footer {
+        padding: 1rem;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .sidebar-settings-btn {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1rem;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background var(--transition-fast);
+        font-size: 0.875rem;
+        color: var(--text-dark);
+        text-align: left;
+    }
+
+    .sidebar-settings-btn:hover {
+        background: rgba(0, 0, 0, 0.05);
+    }
+
+    .sidebar-settings-btn svg {
+        flex-shrink: 0;
+    }
+
+    /* Sidebar Overlay (Mobile) */
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9997;
+        opacity: 1;
+        visibility: visible;
+        transition: all var(--transition-fast);
+    }
+
+    .sidebar-overlay.hidden {
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+    }
+
+    /* Adjust main content when sidebar is open */
+    .ai-state #content-container {
+        margin-left: 260px;
+        transition: margin-left var(--transition-med);
+    }
+
+    .ai-state.sidebar-collapsed #content-container {
+        margin-left: 0;
+    }
+
+    /* ========================================
+   COMPACT HEADER SEARCH & MENU TOGGLE
+   ======================================== */
+
+    /* Compact Header Search (for results view) */
+    .compact-header-search {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-border);
+        border-radius: 22px;
+        flex: 1;
+        max-width: 400px;
+    }
+
+    .compact-header-search.hidden {
+        display: none;
+    }
+
+    .search-icon-compact {
+        color: var(--text-medium);
+        flex-shrink: 0;
+    }
+
+    .compact-header-search-input {
+        flex: 1;
+        border: none;
+        background: transparent;
+        font-size: 0.9375rem;
+        font-family: inherit;
+        color: var(--text-dark);
+        outline: none;
+    }
+
+    .compact-header-search-input::placeholder {
+        color: var(--text-medium);
+    }
+
+    /* Menu Toggle Button (AI Mode) */
+    .menu-toggle-btn {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: 1px solid var(--glass-border);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all var(--transition-fast);
+        color: var(--text-dark);
+    }
+
+    .menu-toggle-btn:hover {
+        background: rgba(0, 0, 0, 0.05);
+        border-color: #ccc;
+    }
+
+    .menu-toggle-btn.hidden {
+        display: none;
+    }
+
+    /* Show menu toggle in AI mode */
+    .ai-state .menu-toggle-btn {
+        display: flex;
+    }
+
+    /* Show compact search in results state */
+    .results-state .compact-header-search {
+        display: flex;
+    }
+
+    /* ========================================
+   RESPONSIVE ADJUSTMENTS
+   ======================================== */
+
+    @media (max-width: 768px) {
+
+        /* Sidebar takes full width on mobile */
+        .sidebar-menu {
+            width: 280px;
+        }
+
+        /* No margin adjustment on mobile - sidebar overlays */
+        .ai-state #content-container {
+            margin-left: 0;
+        }
+
+        /* Show overlay when sidebar is open on mobile */
+        .ai-state:not(.sidebar-collapsed) .sidebar-overlay {
+            opacity: 1;
+            visibility: visible;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .sidebar-menu {
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .compact-header-search {
+            max-width: 100%;
+        }
+    }

@@ -52,6 +52,7 @@ const elements = {
   chatInput: document.getElementById('chat-input'),
   sendBtn: document.getElementById('send-btn'),
   stopBtn: document.getElementById('stop-btn'),
+  newChatBtn: document.getElementById('new-chat-btn'),
 
   // Voice indicator
   voiceIndicator: document.getElementById('voice-indicator'),
@@ -66,6 +67,35 @@ const elements = {
   modalPreviewText: document.getElementById('modal-preview-text'),
   continueReadingBtn: document.getElementById('continue-reading-btn')
 };
+
+
+// Start New Chat
+function startNewChat() {
+  // Clear conversation history
+  state.conversationHistory = [];
+  
+  // Clear chat messages
+  elements.chatMessages.innerHTML = '';
+  
+  // Add welcome message back
+  const welcomeDiv = document.createElement('div');
+  welcomeDiv.className = 'welcome-message';
+  welcomeDiv.innerHTML = `
+    <div class="ai-icon-large">
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+      </svg>
+    </div>
+    <h2>How can I help you today?</h2>
+    <p>Ask me anything about spiritual guidance, meditation, or wisdom from the Guru.</p>
+  `;
+  elements.chatMessages.appendChild(welcomeDiv);
+  
+  // Focus on chat input
+  elements.chatInput.focus();
+  
+  console.log('Started new chat');
+}
 
 // Initialize Application
 function init() {
