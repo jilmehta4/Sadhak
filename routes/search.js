@@ -78,13 +78,15 @@ router.post('/', async (req, res) => {
             });
         }
 
-        console.log(`Search query: "${query}" (UI language: ${uiLanguage})`);
+        console.log(`Search query: "${query}" (UI language: ${uiLanguage}, Resource language: ${resourceLanguage})`);
 
         // Generate embedding for query
         const queryEmbedding = await embeddingGenerator.generateEmbedding(query);
 
-        // Search vector store
-        const searchResults = vectorStore.search(queryEmbedding, maxResults);
+        // Search vector store with MORE results to allow for language filtering
+        // Multiply by 3 to ensure we have enough results after filtering
+        const searchLimit = maxResults * 3;
+        const searchResults = vectorStore.search(queryEmbedding, searchLimit);
 
         if (searchResults.length === 0) {
             return res.json({
@@ -103,19 +105,21 @@ router.post('/', async (req, res) => {
         const chunkMap = new Map(chunks.map(c => [c.id, c]));
 
         // Format results maintaining order and including scores
+        // Filter to only include chunks that match the selected language
         const results = searchResults
             .map(({ chunkId, score }) => {
                 const chunkData = chunkMap.get(chunkId);
-                if (!chunkData) return null;
+                if (!chunkData) return null; // Filtered out by language
 
                 return {
                     ...formatResult(chunkData),
                     score: score // Include relevance score
                 };
             })
-            .filter(r => r !== null);
+            .filter(r => r !== null)
+            .slice(0, maxResults); // Limit to requested number of results
 
-        console.log(`Found ${results.length} results`);
+        console.log(`Found ${results.length} results (from ${searchResults.length} semantic matches, filtered by language: ${resourceLanguage})`);
 
         res.json({
             results: results,
