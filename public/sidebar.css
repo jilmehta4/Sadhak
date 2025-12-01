@@ -4,16 +4,17 @@
 
 /* Sidebar Container - Part of chat interface */
 .sidebar-menu {
-    position: relative;
-    left: 0;
-    top: 0;
-    bottom: 0;
+    /* position: relative; */
+    /* left: 0; */
+    /* top: 0; */
+    /* bottom: 0; */
+    background: var(--glass-bg);
     width: 260px;
     background: white;
     border-right: 1px solid #e5e5e5;
     display: flex;
     flex-direction: column;
-    z-index: 100;
+    /* z-index: 100; */
     transition: transform var(--transition-med);
 }
 

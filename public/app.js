@@ -68,15 +68,39 @@ const elements = {
   continueReadingBtn: document.getElementById('continue-reading-btn')
 };
 
+// Auto-resize textarea as user types
+function autoResizeTextarea(textarea) {
+  textarea.style.height = 'auto';
+  textarea.style.height = Math.min(textarea.scrollHeight, 200) + 'px';
+}
+
+// Initialize auto-resize for chat input
+if (elements.chatInput) {
+  elements.chatInput.addEventListener('input', function () {
+    autoResizeTextarea(this);
+  });
+
+  // Reset height on form submit
+  if (elements.chatForm) {
+    elements.chatForm.addEventListener('submit', function () {
+      setTimeout(() => {
+        if (elements.chatInput) {
+          elements.chatInput.style.height = 'auto';
+        }
+      }, 100);
+    });
+  }
+}
+
 
 // Start New Chat
 function startNewChat() {
   // Clear conversation history
   state.conversationHistory = [];
-  
+
   // Clear chat messages
   elements.chatMessages.innerHTML = '';
-  
+
   // Add welcome message back
   const welcomeDiv = document.createElement('div');
   welcomeDiv.className = 'welcome-message';
@@ -90,10 +114,10 @@ function startNewChat() {
     <p>Ask me anything about spiritual guidance, meditation, or wisdom from the Guru.</p>
   `;
   elements.chatMessages.appendChild(welcomeDiv);
-  
+
   // Focus on chat input
   elements.chatInput.focus();
-  
+
   console.log('Started new chat');
 }
 
