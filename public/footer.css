@@ -53,7 +53,6 @@ body {
 
 /* Adjust chat section to account for footer */
 .chat-section {
-    margin-bottom: 48px;
     min-height: calc(100vh - 64px - 48px);
     /* Header + Footer */
 }
@@ -80,7 +79,6 @@ body {
     }
 
     .chat-section {
-        margin-bottom: 80px;
         min-height: calc(100vh - 64px - 80px);
     }
 }
