@@ -64,7 +64,7 @@ body {
 
 .results-state #content-container,
 .chat-state #content-container {
-  display: block;
+  /* display: block; */
 }
 
 /* Logo Section (Centered Home Page) */
@@ -280,6 +280,16 @@ body {
   background: var(--purple-primary);
 }
 
+/* Content Container - Flex layout for header and sections */
+.content-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 48px);
+  /* Full viewport minus footer */
+  overflow: hidden;
+}
+
+
 /* Compact Header (Results/Chat State) */
 .compact-header {
   position: sticky;
@@ -293,6 +303,8 @@ body {
   gap: 2rem;
   box-shadow: var(--shadow-sm);
   animation: slideDown 0.4s ease;
+  flex-shrink: 0;
+  /* Prevent header from shrinking */
 }
 
 .compact-logo {
@@ -447,7 +459,7 @@ body {
   align-items: center;
   gap: 0.5rem;
   padding: 0.375rem 0.875rem;
-  background: linear-gradient(135deg, var(--purple-primary) 0%, var(--red-accent) 100%);
+  background: linear-gradient(135deg, var(--purple-primary) 0%, var(--red-accent) 100());
   color: white;
   border-radius: 8px;
   font-size: 0.75rem;
@@ -474,15 +486,31 @@ body {
   border-left: 3px solid var(--purple-primary);
 }
 
+/* Results Section */
+.results-section {
+  flex: 1;
+  /* Fill remaining space in content-container */
+  overflow-y: auto;
+  /* Allow scrolling for results */
+  min-height: 0;
+  /* Important for flex children to shrink */
+  padding: 2rem;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
 /* Chat Section */
 .chat-section {
-  margin: 0 auto;
+  margin: 0;
   animation: fadeIn 0.5s ease;
   display: flex;
   flex-direction: row;
-  height: calc(100vh - 80px);
-  /* Subtract header height */
+  flex: 1;
+  /* Fill remaining space in content-container */
   overflow: hidden;
+  min-height: 0;
+  /* Important for flex children to shrink */
 }
 
 .chat-container {
@@ -508,6 +536,8 @@ body {
   /* This makes it fill available space */
   overflow-y: auto;
   /* Allow scrolling if content exceeds height */
+  border-radius: 15px;
+  padding: 15px;
 }
 
 .welcome-message {

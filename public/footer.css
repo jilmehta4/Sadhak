@@ -51,12 +51,6 @@ body {
     padding-bottom: 48px;
 }
 
-/* Adjust chat section to account for footer */
-.chat-section {
-    min-height: calc(100vh - 64px - 48px);
-    /* Header + Footer */
-}
-
 /* Mobile responsive */
 @media (max-width: 768px) {
     .site-footer {
@@ -76,9 +70,5 @@ body {
     body {
         padding-bottom: 80px;
         /* Taller footer on mobile */
-    }
-
-    .chat-section {
-        min-height: calc(100vh - 64px - 80px);
     }
 }
