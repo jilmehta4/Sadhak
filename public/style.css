@@ -476,21 +476,27 @@ body {
 
 /* Chat Section */
 .chat-section {
-  /* padding: 2rem;
-  max-width: 800px; */
   margin: 0 auto;
   animation: fadeIn 0.5s ease;
   display: flex;
   flex-direction: row;
+  height: calc(100vh - 80px);
+  /* Subtract header height */
+  overflow: hidden;
 }
 
 .chat-container {
+  flex: 1;
+  /* Takes remaining space after sidebar */
+  height: 100%;
+  /* Fill parent height */
   background: var(--glass-bg);
-  /* border: 1px solid var(--glass-border); */
-  /* border-radius: 20px; */
   padding: 2rem;
-  min-height: 60vh;
   box-shadow: var(--shadow-md);
+  overflow-y: auto;
+  /* Allow scrolling for chat content */
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-messages {
@@ -498,7 +504,10 @@ body {
   flex-direction: column;
   gap: 1.5rem;
   background: white;
-  /* Match chat-input-container */
+  flex: 1;
+  /* This makes it fill available space */
+  overflow-y: auto;
+  /* Allow scrolling if content exceeds height */
 }
 
 .welcome-message {
