@@ -1,10 +1,10 @@
 /**
- * Sidebar functionality for AI mode - Gemini Style
+ * Sidebar functionality for AI mode - Collapsible Design
  */
 
 // Sidebar state
 const sidebarState = {
-    isCollapsed: true, // Start collapsed by default (icon-only)
+    isCollapsed: false, // Start expanded by default
     currentChatId: null
 };
 
@@ -14,8 +14,7 @@ const sidebarElements = {
     overlay: document.getElementById('sidebar-overlay'),
     toggleBtn: document.getElementById('sidebar-toggle-btn'),
     newChatBtn: document.getElementById('sidebar-new-chat-btn'),
-    historyList: document.getElementById('sidebar-history-list'),
-    standaloneNewChatBtn: null // Will be created dynamically
+    historyList: document.getElementById('sidebar-history-list')
 };
 
 // Initialize sidebar
@@ -25,12 +24,12 @@ function initSidebar() {
     // Check authentication state and update sidebar visibility
     updateSidebarAuthState();
 
-    // Create standalone New Chat button for non-logged-in users
-    createStandaloneNewChatButton();
-
-    // Start with collapsed state (icon-only)
-    sidebarElements.sidebar.classList.add('collapsed');
-    document.querySelector('.chat-section')?.classList.add('sidebar-collapsed');
+    // Load saved sidebar state from localStorage
+    const savedState = localStorage.getItem('sidebarCollapsed');
+    if (savedState === 'true') {
+        sidebarElements.sidebar.classList.add('collapsed');
+        sidebarState.isCollapsed = true;
+    }
 
     // Toggle sidebar
     if (sidebarElements.toggleBtn) {
@@ -66,54 +65,95 @@ function updateSidebarAuthState() {
 
     // Check if authState exists (from auth.js)
     if (typeof authState !== 'undefined' && authState.currentUser) {
-        // User is logged in - show sidebar (collapsed by default)
+        // User is logged in - show sidebar
         sidebarElements.sidebar?.classList.remove('auth-hidden');
         chatSection?.classList.remove('sidebar-hidden');
-        chatSection?.classList.add('sidebar-collapsed');
-
-        // Hide standalone button
-        sidebarElements.standaloneNewChatBtn?.classList.add('hidden');
     } else {
         // User is not logged in - hide sidebar completely
         sidebarElements.sidebar?.classList.add('auth-hidden');
         chatSection?.classList.add('sidebar-hidden');
-        chatSection?.classList.remove('sidebar-collapsed');
-
-        // Show standalone button
-        sidebarElements.standaloneNewChatBtn?.classList.remove('hidden');
     }
 }
 
-// Create standalone New Chat button for non-logged-in users
-function createStandaloneNewChatButton() {
+
+
+// Toggle sidebar expanded/collapsed
+function toggleSidebar() {
     sidebarState.isCollapsed = !sidebarState.isCollapsed;
     const chatSection = document.querySelector('.chat-section');
 
     if (sidebarState.isCollapsed) {
-        // Collapse to icon-only (72px)
+        // Collapse to icon-only (60px)
         sidebarElements.sidebar?.classList.add('collapsed');
-        chatSection?.classList.add('sidebar-collapsed');
         sidebarElements.overlay?.classList.remove('active');
     } else {
         // Expand to full width (260px)
         sidebarElements.sidebar?.classList.remove('collapsed');
-        chatSection?.classList.remove('sidebar-collapsed');
 
         // Show overlay only on mobile
         if (window.innerWidth <= 768) {
-            sidebarElements.sidebar?.classList.add('expanded');
             sidebarElements.overlay?.classList.add('active');
+            sidebarElements.overlay?.classList.remove('hidden');
         }
     }
+
+    // Save state to localStorage
+    localStorage.setItem('sidebarCollapsed', sidebarState.isCollapsed);
 }
 
 // Collapse sidebar (used for mobile overlay click)
 function collapseSidebar() {
     sidebarState.isCollapsed = true;
     sidebarElements.sidebar?.classList.add('collapsed');
-    sidebarElements.sidebar?.classList.remove('expanded');
-    document.querySelector('.chat-section')?.classList.add('sidebar-collapsed');
     sidebarElements.overlay?.classList.remove('active');
+    sidebarElements.overlay?.classList.add('hidden');
+
+    // Save state
+    localStorage.setItem('sidebarCollapsed', true);
+}
+
+// Start a new chat
+function startNewChat() {
+    // Clear current messages
+    if (typeof elements !== 'undefined' && elements.chatMessages) {
+        elements.chatMessages.innerHTML = `
+            <div class="welcome-message">
+                <svg class="ai-icon-large" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2">
+                    <path
+                        d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73a2 2 0 0 1-1-1.73 2 2 0 0 1 2-2Z">
+                    </path>
+                </svg>
+                <h2>AI Assistant</h2>
+                <p>Ask me anything in English or Hindi</p>
+            </div>
+        `;
+    }
+
+    // Clear conversation history
+    if (typeof state !== 'undefined') {
+        state.conversationHistory = [];
+    }
+    sidebarState.currentChatId = null;
+
+    // Clear input
+    const chatInput = document.getElementById('chat-input');
+    if (chatInput) {
+        chatInput.value = '';
+        chatInput.focus();
+    }
+
+    // Remove active state from all history items
+    document.querySelectorAll('.sidebar-history-item').forEach(item => {
+        item.classList.remove('active');
+    });
+
+    // Collapse sidebar on mobile
+    if (window.innerWidth <= 768) {
+        collapseSidebar();
+    }
+
+    console.log('Started new chat');
 }
 
 // Load chat history
@@ -123,6 +163,7 @@ async function loadChatHistory() {
 
         if (!response.ok) {
             // User not logged in or error
+            showEmptyHistory();
             return;
         }
 

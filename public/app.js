@@ -23,7 +23,6 @@ const elements = {
   searchInput: document.getElementById('search-input'),
   voiceBtn: document.getElementById('voice-btn'),
   aiToggle: document.getElementById('ai-toggle'),
-  modeText: document.getElementById('mode-text'),
 
   // Compact header elements
   modeSwitcherBtn: document.getElementById('mode-switcher-btn'),
@@ -285,10 +284,14 @@ function updateModeUI() {
   elements.compactAiToggle.classList.toggle('active', isAIMode);
   console.log('Button active classes toggled');
 
-  // Update mode text
+  // Update mode text (if elements exist)
   const modeText = isAIMode ? 'AI Assistant' : 'Search Mode';
-  elements.modeText.textContent = modeText;
-  elements.compactModeText.textContent = modeText;
+  if (elements.modeText) {
+    elements.modeText.textContent = modeText;
+  }
+  if (elements.compactModeText) {
+    elements.compactModeText.textContent = modeText;
+  }
   console.log('Mode text updated to:', modeText);
 
   // Update placeholder
