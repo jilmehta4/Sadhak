@@ -29,9 +29,12 @@ app.use(session({
     secret: process.env.SESSION_SECRET || 'gurutattva-secret-key-change-in-production',
     resave: false,
     saveUninitialized: false,
+    proxy: true, // Required if your server is behind a proxy (like Railway)
     cookie: {
-        secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+        //secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+        secure: true, // Always true for Railway HTTPS
         httpOnly: true,
+        sameSite: 'none', // Crucial for modern browser cookie acceptance
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     }
 }));

@@ -159,7 +159,10 @@ function startNewChat() {
 // Load chat history
 async function loadChatHistory() {
     try {
-        const response = await fetch('/history');
+        // const response = await fetch('/history', {
+        //     credentials: 'include'
+        // });
+        const response = await fetch('/history',);
 
         if (!response.ok) {
             // User not logged in or error
