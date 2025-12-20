@@ -2,7 +2,7 @@
 
 A powerful local semantic search engine that indexes and searches JPG images and PDF files containing text in **English** and **Hindi**. The system uses OCR, natural language processing, and vector embeddings to enable cross-language semantic search.
 
-🌐 Live Demo: sadhak.up.railway.app
+🌐 **🔗 [Live Demo: sadhak.up.railway.app](http://sadhak.up.railway.app/)**
 
 ## ✨ Features
 
