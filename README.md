@@ -2,7 +2,13 @@
 
 A powerful multilingual semantic search engine with AI chat capabilities, supporting English and Hindi content. Built with Node.js, Express, Flutter, and modern web technologies.
 
+<<<<<<< HEAD
 ## 🌟 Features
+=======
+🌐 **🔗 [Live Demo: sadhak.up.railway.app](http://sadhak.up.railway.app/)**
+
+## ✨ Features
+>>>>>>> c2749189d0bcae95ed8cd9bea31cc0ffea33e2ba
 
 - **Semantic Search**: Search through PDFs and images using advanced embeddings
 - **Multilingual Support**: Full support for English and Hindi (हिंदी)
