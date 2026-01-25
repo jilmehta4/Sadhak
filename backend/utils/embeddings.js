@@ -1,10 +1,10 @@
-const { pipeline } = require('@xenova/transformers');
 const config = require('../config');
 
 class EmbeddingGenerator {
     constructor() {
         this.model = null;
         this.modelName = config.embeddingModel;
+        this.pipeline = null;
     }
 
     /**
@@ -13,7 +13,14 @@ class EmbeddingGenerator {
     async initialize() {
         if (!this.model) {
             console.log(`Loading embedding model: ${this.modelName}...`);
-            this.model = await pipeline('feature-extraction', this.modelName);
+
+            // Dynamic import for ES Module
+            if (!this.pipeline) {
+                const { pipeline } = await import('@xenova/transformers');
+                this.pipeline = pipeline;
+            }
+
+            this.model = await this.pipeline('feature-extraction', this.modelName);
             console.log('Embedding model loaded successfully');
         }
     }
