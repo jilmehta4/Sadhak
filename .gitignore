@@ -3,3 +3,52 @@ node_modules/
 PROJECT_PLAN_MOBILE_APP.md
 FLUTTER_SETUP_GUIDE.md
 setup_flutter.ps1
+
+
+# =========================
+# Flutter / Dart
+# =========================
+mobile/.dart_tool/
+mobile/.packages
+mobile/.pub-cache/
+mobile/build/
+mobile/.flutter-plugins
+mobile/.flutter-plugins-dependencies
+
+# =========================
+# IDEs / Editors
+# =========================
+mobile/.idea/
+mobile/.vscode/
+mobile/*.iml
+
+# =========================
+# Android
+# =========================
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/key.properties
+mobile/android/app/debug.keystore
+
+# =========================
+# iOS
+# =========================
+mobile/ios/Pods/
+mobile/ios/.symlinks/
+mobile/ios/Flutter/ephemeral/
+mobile/ios/Flutter/App.framework
+mobile/ios/Flutter/Flutter.framework
+mobile/ios/Flutter/Flutter.podspec
+mobile/ios/Flutter/Generated.xcconfig
+
+# =========================
+# Desktop platforms
+# =========================
+mobile/linux/flutter/
+mobile/macos/Flutter/ephemeral/
+mobile/windows/flutter/
+
+# =========================
+# Coverage / misc
+# =========================
+mobile/coverage/

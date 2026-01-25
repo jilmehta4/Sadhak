@@ -7,6 +7,8 @@ A powerful multilingual semantic search engine with AI chat capabilities, suppor
 =======
 🌐 **🔗 [Live Demo: sadhak.up.railway.app](http://sadhak.up.railway.app/)**
 
+🌐 **🔗 [Live Demo: sadhak.up.railway.app](http://sadhak.up.railway.app/)**
+
 ## ✨ Features
 >>>>>>> c2749189d0bcae95ed8cd9bea31cc0ffea33e2ba
 
