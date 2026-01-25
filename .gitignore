@@ -1,2 +1,5 @@
 node_modules/
 .env
+PROJECT_PLAN_MOBILE_APP.md
+FLUTTER_SETUP_GUIDE.md
+setup_flutter.ps1
