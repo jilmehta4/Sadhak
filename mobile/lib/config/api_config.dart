@@ -6,10 +6,10 @@
 class ApiConfig {
   // Base URLs
   static const String devBaseUrl = 'http://10.0.2.2:3000'; // Android emulator localhost
-  static const String prodBaseUrl = 'https://your-production-url.com'; // TODO: Update with production URL
+  static const String prodBaseUrl = 'http://3.234.250.60'; // TODO: Update with production URL
   
   // Current environment
-  static const bool isProduction = false; // Set to true for production builds
+  static const bool isProduction = true; // Set to true for production builds
   
   // Get current base URL based on environment
   static String get baseUrl => isProduction ? prodBaseUrl : devBaseUrl;
