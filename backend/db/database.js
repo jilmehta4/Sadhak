@@ -71,7 +71,7 @@ class DatabaseManager {
 
         stmt.step();
         stmt.free();
-        this.save(); // Save after each insert
+        // NOTE: do not call this.save() here — caller is responsible (via transaction)
     }
 
     /**
@@ -95,7 +95,35 @@ class DatabaseManager {
 
         stmt.step();
         stmt.free();
-        this.save(); // Save after each insert
+        // NOTE: do not call this.save() here — caller is responsible (via transaction)
+    }
+
+    /**
+     * Insert multiple chunks efficiently in one prepared-statement loop
+     * @param {Object[]} chunks - Array of chunk objects
+     */
+    insertChunksBatch(chunks) {
+        const stmt = this.db.prepare(`
+      INSERT INTO chunks (id, resourceId, text, language, page, paragraph, timestamp)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+
+        for (const chunk of chunks) {
+            stmt.bind([
+                chunk.id,
+                chunk.resourceId,
+                chunk.text,
+                chunk.language,
+                chunk.page || null,
+                chunk.paragraph || null,
+                chunk.timestamp || null
+            ]);
+            stmt.step();
+            stmt.reset();
+        }
+
+        stmt.free();
+        // Caller is responsible for save()
     }
 
     /**
@@ -276,6 +304,111 @@ class DatabaseManager {
         stmt.free();
         return results;
     }
+
+    /**
+     * Keyword-based search — 3 tiers:
+     * 1. Exact phrase match (full query as-is)
+     * 2. Word-by-word OR match (any word present)
+     * 3. Language preference — English/preferred results sorted first, not hard-filtered
+     */
+    searchByKeyword(query, language = null, limit = 10) {
+        const normalizedQuery = query.replace(/\s+/g, ' ').trim().toLowerCase();
+
+        // ── Tier 1: Exact phrase match ──────────────────────────────────────
+        // Search WITHOUT language filter — then sort preferred language first
+        const phraseResults = this._keywordQuery(
+            `LOWER(c.text) LIKE ?`,
+            [`%${normalizedQuery}%`],
+            null,          // no language filter — get all matches
+            limit * 3      // fetch extra so we can sort and slice
+        );
+        if (phraseResults.length > 0) {
+            const wordCount = normalizedQuery.split(/\s+/).length;
+            return this._sortByLanguage(phraseResults, language)
+                .slice(0, limit)
+                .map(r => ({ ...r, keywordHits: wordCount }));
+        }
+
+        // ── Tier 2: Word-by-word OR match ──────────────────────────────────
+        const words = normalizedQuery
+            .split(/\s+/)
+            .filter(w => w.length > 1);
+
+        if (words.length === 0) return [];
+
+        const likeConditions = words.map(() => `WHEN LOWER(c.text) LIKE ? THEN 1 ELSE 0`).join('\n          ');
+        const likeArgs = words.map(w => `%${w}%`);
+
+        const wordResults = this._keywordQuery(
+            `(${words.map(() => `LOWER(c.text) LIKE ?`).join(' OR ')})`,
+            likeArgs,
+            null,          // no language filter
+            limit * 3,
+            likeArgs,
+            likeConditions
+        );
+
+        return this._sortByLanguage(wordResults, language).slice(0, limit);
+    }
+
+    /**
+     * Sort results so preferred language comes first; within same language, preserve order.
+     */
+    _sortByLanguage(results, preferredLanguage) {
+        if (!preferredLanguage) return results;
+        return [...results].sort((a, b) => {
+            const aMatch = a.language === preferredLanguage ? 0 : 1;
+            const bMatch = b.language === preferredLanguage ? 0 : 1;
+            return aMatch - bMatch;
+        });
+    }
+
+    /**
+     * Internal helper — runs a keyword query with given WHERE condition and args
+     */
+    _keywordQuery(whereClause, whereArgs, language, limit, sumArgs = null, likeConditions = null) {
+        const langFilter = language ? `AND c.language = ?` : '';
+        const langArgs = language ? [language] : [];
+
+        const scoreExpr = likeConditions
+            ? `(SELECT SUM(CASE ${likeConditions} END) FROM (SELECT 1))`
+            : `1`;
+
+        const stmt = this.db.prepare(`
+      SELECT
+        c.*,
+        r.type as resourceType,
+        r.subtype as resourceSubtype,
+        r.fileName as resourceFileName,
+        r.filePath as resourceFilePath,
+        r.recordedAt as resourceRecordedAt,
+        ${scoreExpr} as keywordHits
+      FROM chunks c
+      JOIN resources r ON c.resourceId = r.id
+      WHERE ${whereClause}
+        ${langFilter}
+      ORDER BY keywordHits DESC
+      LIMIT ?
+    `);
+
+        const bindArgs = [
+            ...(sumArgs || []),
+            ...whereArgs,
+            ...langArgs,
+            limit
+        ];
+
+        stmt.bind(bindArgs);
+
+        const results = [];
+        while (stmt.step()) {
+            results.push(stmt.getAsObject());
+        }
+
+        stmt.free();
+        return results;
+    }
+
 
     /**
      * Execute a transaction (simplified for SQL.js)

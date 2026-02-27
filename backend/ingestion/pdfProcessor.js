@@ -36,18 +36,87 @@ function isTranscript(text) {
 }
 
 /**
- * Split text into paragraphs
- * @param {string} text - Text to split
- * @returns {string[]} - Array of paragraphs
+ * Clean raw PDF text — strip artifacts, normalize whitespace
+ * @param {string} text
+ * @returns {string}
  */
-function splitIntoParagraphs(text) {
-    // Split by double newlines or multiple whitespace
+function cleanText(text) {
+    return text
+        .replace(/\r\n/g, '\n')                     // normalize line endings
+        .replace(/[ \t]+/g, ' ')                     // collapse horizontal whitespace
+        .replace(/\n{3,}/g, '\n\n')                  // collapse triple+ newlines to double
+        .replace(/^\s+|\s+$/gm, '')                  // trim each line
+        .replace(/^[\d]+\s*$/gm, '')                 // remove lone page-number lines
+        .trim();
+}
+
+/**
+ * Split text into overlapping chunks respecting min/max size
+ * @param {string} text - cleaned full text
+ * @returns {string[]} - array of chunks
+ */
+function splitIntoChunks(text) {
+    const { minChunkLength, maxChunkLength, chunkOverlap } = require('../config');
+
+    // First split by paragraph boundaries
     const paragraphs = text
         .split(/\n\s*\n/)
         .map(p => p.trim())
-        .filter(p => p.length > 0);
+        .filter(p => p.length >= minChunkLength);
 
-    return paragraphs;
+    const chunks = [];
+    let buffer = '';
+
+    for (let i = 0; i < paragraphs.length; i++) {
+        const para = paragraphs[i];
+
+        // If a single paragraph exceeds maxChunkLength, split it by sentences
+        if (para.length > maxChunkLength) {
+            // Flush buffer first
+            if (buffer.length >= minChunkLength) {
+                chunks.push(buffer.trim());
+                // Carry overlap forward
+                buffer = buffer.slice(-chunkOverlap);
+            } else {
+                buffer = '';
+            }
+
+            // Split the big paragraph by sentence endings
+            const sentences = para.match(/[^.!?।\n]+[.!?।\n]*/g) || [para];
+            let sentBuffer = '';
+            for (const sentence of sentences) {
+                if ((sentBuffer + ' ' + sentence).trim().length > maxChunkLength && sentBuffer.length >= minChunkLength) {
+                    chunks.push(sentBuffer.trim());
+                    // Overlap: carry last portion into next chunk
+                    sentBuffer = sentBuffer.slice(-chunkOverlap) + ' ' + sentence;
+                } else {
+                    sentBuffer = sentBuffer ? sentBuffer + ' ' + sentence : sentence;
+                }
+            }
+            if (sentBuffer.trim().length >= minChunkLength) {
+                buffer = sentBuffer.trim();
+            }
+            continue;
+        }
+
+        // Try to combine small paragraphs into one chunk
+        const candidate = buffer ? buffer + '\n\n' + para : para;
+
+        if (candidate.length > maxChunkLength && buffer.length >= minChunkLength) {
+            // Flush buffer, start new with overlap + current para
+            chunks.push(buffer.trim());
+            buffer = buffer.slice(-chunkOverlap) + '\n\n' + para;
+        } else {
+            buffer = candidate;
+        }
+    }
+
+    // Flush remaining buffer
+    if (buffer.trim().length >= minChunkLength) {
+        chunks.push(buffer.trim());
+    }
+
+    return chunks;
 }
 
 /**
@@ -120,39 +189,31 @@ async function processBookPdf(pdfPath, fullText) {
         title: fileName.replace('.pdf', '')
     };
 
-    // Split into paragraphs
-    const paragraphs = splitIntoParagraphs(fullText);
-    console.log(`Found ${paragraphs.length} paragraphs`);
+    // Clean text then split into overlapping, size-bounded chunks
+    const cleaned = cleanText(fullText);
+    const chunkTexts = splitIntoChunks(cleaned);
+    console.log(`Found ${chunkTexts.length} chunks (after cleaning + overlap splitting)`);
 
     const chunks = [];
     const embeddings = [];
 
-    // Create chunks for each paragraph
-    // Note: We're creating one chunk per paragraph across all pages
-    // For simplicity, we won't track exact page numbers (would require more complex PDF parsing)
-    for (let i = 0; i < paragraphs.length; i++) {
-        const paragraphText = paragraphs[i];
-
-        if (paragraphText.length < 10) {
-            // Skip very short paragraphs
-            continue;
-        }
-
-        const language = detectLanguage(paragraphText);
+    for (let i = 0; i < chunkTexts.length; i++) {
+        const chunkText = chunkTexts[i];
+        const language = detectLanguage(chunkText);
         const chunkId = uuidv4();
 
         chunks.push({
             id: chunkId,
             resourceId: resourceId,
-            text: paragraphText,
+            text: chunkText,
             language: language,
-            page: null, // Would need more advanced PDF parsing to determine exact page
+            page: null,
             paragraph: i + 1,
             timestamp: null
         });
 
         // Generate embedding
-        const embedding = await embeddingGenerator.generateEmbedding(paragraphText);
+        const embedding = await embeddingGenerator.generateEmbedding(chunkText);
         embeddings.push({ chunkId, embedding });
     }
 

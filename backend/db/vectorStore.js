@@ -51,19 +51,22 @@ class VectorStore {
      * Search for similar vectors
      * @param {number[]} queryVector - The query embedding
      * @param {number} k - Number of results to return
+     * @param {number} [threshold] - Minimum cosine similarity score (0-1). Defaults to config value.
      * @returns {Array} - Array of {chunkId, score} sorted by similarity
      */
-    search(queryVector, k = 10) {
+    search(queryVector, k = 10, threshold = config.similarityThreshold) {
         if (!queryVector || queryVector.length !== this.dimension) {
             throw new Error(`Query vector must have ${this.dimension} dimensions`);
         }
 
         const results = [];
 
-        // Calculate similarity for each vector
+        // Calculate similarity for each vector, skip below threshold early
         for (const [chunkId, vector] of this.vectors) {
             const similarity = embeddingGenerator.cosineSimilarity(queryVector, vector);
-            results.push({ chunkId, score: similarity });
+            if (similarity >= threshold) {
+                results.push({ chunkId, score: similarity });
+            }
         }
 
         // Sort by similarity (descending) and return top k

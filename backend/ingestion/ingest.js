@@ -62,14 +62,13 @@ async function runIngestion() {
             console.log('\n--- Processing PDFs ---');
             const pdfResults = await processPdfs(pdfs);
 
-            // Save to database using transaction
+            // Save to database using transaction with batch chunk insert
             for (const { resource, chunks, embeddings } of pdfResults) {
                 dbManager.transaction(() => {
                     dbManager.insertResource(resource);
 
-                    for (const chunk of chunks) {
-                        dbManager.insertChunk(chunk);
-                    }
+                    // Batch insert all chunks in one pass (much faster than one-by-one)
+                    dbManager.insertChunksBatch(chunks);
 
                     for (const { chunkId, embedding } of embeddings) {
                         vectorStore.addVector(chunkId, embedding);

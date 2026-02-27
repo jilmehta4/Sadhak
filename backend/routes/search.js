@@ -59,80 +59,105 @@ function formatResult(chunkData) {
 
 /**
  * POST / (mounted at /search, so actual endpoint is POST /search)
- * Search for resources by query
- * 
  * Body:
  * {
- *   "query": "search text in English or Hindi",
+ *   "query": "search text",
  *   "maxResults": 10,
- *   "uiLanguage": "en" or "hi"
+ *   "uiLanguage": "en" | "hi",
+ *   "resourceLanguage": "en" | "hi",
+ *   "searchMode": "semantic" | "keyword"   <-- NEW
  * }
  */
 router.post('/', async (req, res) => {
     try {
-        const { query, maxResults = config.defaultMaxResults, uiLanguage = 'en', resourceLanguage = 'en' } = req.body;
+        const {
+            query,
+            maxResults = config.defaultMaxResults,
+            uiLanguage = 'en',
+            resourceLanguage = 'en',
+            searchMode = 'semantic'          // default: semantic
+        } = req.body;
 
         if (!query || query.trim().length === 0) {
-            return res.status(400).json({
-                error: 'Query parameter is required'
-            });
+            return res.status(400).json({ error: 'Query parameter is required' });
         }
 
-        console.log(`Search query: "${query}" (UI language: ${uiLanguage}, Resource language: ${resourceLanguage})`);
+        console.log(`Search query: "${query}" | mode: ${searchMode} | lang: ${resourceLanguage}`);
 
-        // Generate embedding for query
+        // ─── KEYWORD MODE ──────────────────────────────────────────────────────
+        if (searchMode === 'keyword') {
+            const chunks = dbManager.searchByKeyword(query, resourceLanguage, maxResults);
+
+            if (chunks.length === 0) {
+                return res.json({
+                    results: [],
+                    query,
+                    count: 0,
+                    searchMode: 'keyword',
+                    message: uiLanguage === 'hi' ? 'कोई परिणाम नहीं मिला' : 'No results found'
+                });
+            }
+
+            const results = chunks.map(chunkData => ({
+                ...formatResult(chunkData),
+                score: chunkData.keywordHits,   // number of matched words (not 0-1)
+                searchMode: 'keyword'
+            }));
+
+            console.log(`Keyword search: ${results.length} results`);
+            return res.json({ results, query, count: results.length, searchMode: 'keyword' });
+        }
+
+        // ─── SEMANTIC MODE (default) ────────────────────────────────────────────
         const queryEmbedding = await embeddingGenerator.generateEmbedding(query);
 
-        // Search vector store with MORE results to allow for language filtering
-        // Multiply by 3 to ensure we have enough results after filtering
-        const searchLimit = maxResults * 3;
+        const searchLimit = maxResults * config.searchOverfetchMultiplier;
         const searchResults = vectorStore.search(queryEmbedding, searchLimit);
 
         if (searchResults.length === 0) {
             return res.json({
                 results: [],
+                query,
+                count: 0,
+                searchMode: 'semantic',
                 message: uiLanguage === 'hi' ? 'कोई परिणाम नहीं मिला' : 'No results found'
             });
         }
 
-        // Get chunk IDs
         const chunkIds = searchResults.map(r => r.chunkId);
+        const scoreMap = new Map(searchResults.map(r => [r.chunkId, r.score]));
 
-        // Retrieve chunks with resource data - FILTERED BY LANGUAGE
-        const chunks = dbManager.getChunksWithResourcesByLanguage(chunkIds, resourceLanguage);
+        let chunks = dbManager.getChunksWithResourcesByLanguage(chunkIds, resourceLanguage);
+        let usedFallback = false;
+        if (chunks.length === 0) {
+            console.log(`Language "${resourceLanguage}" returned nothing — falling back to all languages`);
+            chunks = dbManager.getChunksWithResources(chunkIds);
+            usedFallback = true;
+        }
 
-        // Create a map for quick lookup
         const chunkMap = new Map(chunks.map(c => [c.id, c]));
-
-        // Format results maintaining order and including scores
-        // Filter to only include chunks that match the selected language
         const results = searchResults
-            .map(({ chunkId, score }) => {
+            .map(({ chunkId }) => {
                 const chunkData = chunkMap.get(chunkId);
-                if (!chunkData) return null; // Filtered out by language
-
-                return {
-                    ...formatResult(chunkData),
-                    score: score // Include relevance score
-                };
+                if (!chunkData) return null;
+                return { ...formatResult(chunkData), score: scoreMap.get(chunkId), searchMode: 'semantic' };
             })
             .filter(r => r !== null)
-            .slice(0, maxResults); // Limit to requested number of results
+            .slice(0, maxResults);
 
-        console.log(`Found ${results.length} results (from ${searchResults.length} semantic matches, filtered by language: ${resourceLanguage})`);
+        console.log(`Semantic search: ${results.length} results${usedFallback ? ' [lang fallback]' : ''}`);
 
         res.json({
-            results: results,
-            query: query,
-            count: results.length
+            results,
+            query,
+            count: results.length,
+            searchMode: 'semantic',
+            ...(usedFallback && { warning: 'Language filter returned no results; showing cross-language matches' })
         });
 
     } catch (error) {
         console.error('Search error:', error);
-        res.status(500).json({
-            error: 'Internal server error',
-            message: error.message
-        });
+        res.status(500).json({ error: 'Internal server error', message: error.message });
     }
 });
 

@@ -15,6 +15,13 @@ const config = {
 
   // Search configuration
   defaultMaxResults: 10,
+  similarityThreshold: 0.30,   // Minimum cosine similarity to include a result
+  searchOverfetchMultiplier: 5, // How many extra results to fetch before language filtering
+
+  // Chunking configuration
+  minChunkLength: 80,    // Characters — skip very short/noisy paragraphs
+  maxChunkLength: 2000,  // Characters — split oversized paragraphs
+  chunkOverlap: 150,     // Characters of overlap between adjacent chunks
 
   // Supported languages
   languages: {
