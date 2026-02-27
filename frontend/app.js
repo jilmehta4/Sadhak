@@ -6,14 +6,15 @@
 // State Management
 const state = {
   mode: 'search', // 'search' or 'ai'
+  searchMode: 'semantic', // 'semantic' or 'keyword'
   isVoiceRecording: false,
   recognition: null,
   conversationHistory: [],
   currentLanguage: 'en',
-  selectedResourceLanguage: 'en', // NEW: for resource filtering
+  selectedResourceLanguage: 'en',
   isAIResponding: false,
-  currentReader: null, // Store the stream reader for stopping
-  abortController: null // Store AbortController for cancelling fetch requests
+  currentReader: null,
+  abortController: null
 };
 
 // DOM Elements
@@ -23,6 +24,8 @@ const elements = {
   searchInput: document.getElementById('search-input'),
   voiceBtn: document.getElementById('voice-btn'),
   aiToggle: document.getElementById('ai-toggle'),
+  searchModeToggle: document.getElementById('search-mode-toggle'),
+  compactSearchModeToggle: document.getElementById('compact-search-mode-toggle'),
 
   // Compact header elements
   modeSwitcherBtn: document.getElementById('mode-switcher-btn'),
@@ -77,6 +80,16 @@ function autoResizeTextarea(textarea) {
 if (elements.chatInput) {
   elements.chatInput.addEventListener('input', function () {
     autoResizeTextarea(this);
+  });
+
+  // Enter submits, Shift+Enter inserts newline
+  elements.chatInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (elements.chatForm) {
+        elements.chatForm.dispatchEvent(new Event('submit', { cancelable: true }));
+      }
+    }
   });
 
   // Reset height on form submit
@@ -151,6 +164,10 @@ function setupEventListeners() {
   elements.voiceBtn.addEventListener('click', toggleVoiceRecognition);
   elements.compactVoiceBtn.addEventListener('click', toggleVoiceRecognition);
   elements.stopVoiceBtn.addEventListener('click', stopVoiceRecognition);
+
+  // Search mode toggles (semantic ↔ keyword)
+  elements.searchModeToggle.addEventListener('click', toggleSearchMode);
+  elements.compactSearchModeToggle.addEventListener('click', toggleSearchMode);
 
   // AI mode toggles
   elements.aiToggle.addEventListener('click', () => {
@@ -469,6 +486,23 @@ function detectLanguage(text) {
   return devanagariPattern.test(text) ? 'hi' : 'en';
 }
 
+// Toggle Search Mode (semantic ↔ keyword)
+function toggleSearchMode() {
+  state.searchMode = state.searchMode === 'semantic' ? 'keyword' : 'semantic';
+  const isExact = state.searchMode === 'keyword';
+
+  [elements.searchModeToggle, elements.compactSearchModeToggle].forEach(btn => {
+    if (!btn) return;
+    btn.classList.toggle('exact-mode', isExact);
+    btn.querySelector('.mode-label').textContent = isExact ? 'Exact' : 'Meaning';
+    btn.title = isExact
+      ? 'Exact keyword match — finds text containing these exact words'
+      : 'Meaning search — finds semantically similar content';
+  });
+
+  console.log(`Search mode: ${state.searchMode}`);
+}
+
 // Handle Search Query
 async function handleSearchQuery(query) {
   // Show search results section
@@ -488,7 +522,8 @@ async function handleSearchQuery(query) {
       },
       body: JSON.stringify({
         query,
-        resourceLanguage: state.selectedResourceLanguage // NEW
+        resourceLanguage: state.selectedResourceLanguage,
+        searchMode: state.searchMode    // 'semantic' or 'keyword'
       })
     });
 
@@ -534,12 +569,14 @@ function displaySearchResults(results) {
     }
 
     card.innerHTML = `
-            <div class="result-type-badge">${result.resourceType}</div>
+            <div class="result-type-badge">${result.resourceType}${result.subtype ? ` · ${result.subtype}` : ''}</div>
             <div class="result-meta">
-                <span><strong>File:</strong> ${result.resourceName}</span>
+                <span><strong>📄 File:</strong> ${result.resourceName || 'Unknown'}</span>
                 ${result.page ? `<span><strong>Page:</strong> ${result.page}</span>` : ''}
-                ${result.timestamp ? `<span><strong>Time:</strong> ${result.timestamp}</span>` : ''}
+                ${!result.page && result.paragraph ? `<span><strong>Section:</strong> #${result.paragraph}</span>` : ''}
+                ${result.timestamp ? `<span><strong>⏱ Time:</strong> ${result.timestamp}</span>` : ''}
                 <span class="language-tag">${result.language.toUpperCase()}</span>
+                ${result.score !== undefined ? `<span class="relevance-badge" title="Relevance score">${Math.round(result.score * 100)}% match</span>` : ''}
             </div>
             <div class="result-text" lang="${result.language}">${highlightQuery(result.text, elements.searchInput.value)}</div>
         `;

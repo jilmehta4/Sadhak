@@ -477,6 +477,53 @@ body {
   color: var(--text-medium);
 }
 
+.relevance-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  background: rgba(34, 197, 94, 0.1);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* Search Mode Toggle Button */
+.search-mode-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.4rem 0.9rem;
+  background: rgba(81, 45, 124, 0.08);
+  border: 1.5px solid rgba(81, 45, 124, 0.25);
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--purple-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-family: inherit;
+}
+
+.search-mode-toggle-btn:hover {
+  background: rgba(81, 45, 124, 0.15);
+  border-color: var(--purple-primary);
+}
+
+/* Active state = Exact keyword mode */
+.search-mode-toggle-btn.exact-mode {
+  background: rgba(234, 88, 12, 0.1);
+  border-color: rgba(234, 88, 12, 0.4);
+  color: #ea580c;
+}
+
+.search-mode-toggle-btn.exact-mode:hover {
+  background: rgba(234, 88, 12, 0.18);
+}
+
 .result-text {
   color: var(--text-dark);
   line-height: 1.7;

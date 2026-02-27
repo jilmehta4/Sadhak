@@ -24,13 +24,13 @@ class SearchResult {
   /// Create SearchResult from JSON
   factory SearchResult.fromJson(Map<String, dynamic> json) {
     return SearchResult(
-      id: json['id']?.toString() ?? '',
-      filename: json['filename'] ?? '',
+      id: json['chunkId']?.toString() ?? json['id']?.toString() ?? '',
+      filename: json['resourceName'] ?? json['filename'] ?? '',
       thumbnailPath: json['thumbnail_path'] ?? json['thumbnailPath'],
       language: json['language'] ?? 'en',
       score: (json['score'] ?? 0.0).toDouble(),
       text: json['text'],
-      pageNumber: json['page_number'] ?? json['pageNumber'],
+      pageNumber: json['paragraph'] ?? json['page_number'] ?? json['pageNumber'],
     );
   }
 
